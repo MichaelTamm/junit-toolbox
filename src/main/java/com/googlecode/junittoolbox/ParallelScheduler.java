@@ -10,7 +10,12 @@ import java.util.LinkedList;
 
 import static jsr166y.ForkJoinTask.inForkJoinPool;
 
-public class ParallelScheduler implements RunnerScheduler {
+/**
+ * Encapsulates the singleton {@link ForkJoinPool} used
+ * by {@link ParallelRunner} and {@link ParallelSuite}
+ * to execute test classes and test methods concurrently.
+ */
+class ParallelScheduler implements RunnerScheduler {
 
     private static final ForkJoinPool FORK_JOIN_POOL = setUpForkJoinPool();
 
