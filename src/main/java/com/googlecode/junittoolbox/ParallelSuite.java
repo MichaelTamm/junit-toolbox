@@ -21,7 +21,7 @@ import org.junit.runners.model.RunnerBuilder;
  *     public class AllFrontendTests {}
  * </pre>
  * Or you can specify a wildcard pattern using the <code>{@link com.googlecode.junittoolbox.SuiteClasses @SuiteClasses}</code> annotation
- * provided by <a href="http://junit-toolbox.googlecode.com/">junit-toolbox</a>:<pre>
+ * provided by <a href="https://junit-toolbox.googlecode.com/">JUnit Toolbox</a>:<pre>
  *     &#64;RunWith(ParallelSuite.class)
  *     &#64;SuiteClasses("&#42;&#42;/&#42;FrontendTest.class")
  *     public class AllFrontendTests {}
