@@ -24,34 +24,39 @@ public class WildcardPatternSuiteTest {
     @Test
     public void test_AllTests_sample() throws Exception {
         Runner runner = ClassRequest.aClass(AllTests.class).getRunner();
-        List children = getChildren(runner);
+        List<Runner> children = getChildren(runner);
         assertThat(children.size(), is(3));
-        assertThat(children, hasItem(withTestClass(LoginBeanTest.class)));
-        assertThat(children, hasItem(withTestClass(LoginFrontendTest.class)));
-        assertThat(children, hasItem(withTestClass(FillOutFormFrontendTest.class)));
+        assertThat(children, hasItemWithTestClass(LoginBeanTest.class));
+        assertThat(children, hasItemWithTestClass(LoginFrontendTest.class));
+        assertThat(children, hasItemWithTestClass(FillOutFormFrontendTest.class));
     }
 
     @Test
     public void test_AllTestsInThisPackage_sample() throws Exception {
         Runner runner = ClassRequest.aClass(AllTestsInThisPackage.class).getRunner();
-        List children = getChildren(runner);
+        List<Runner> children = getChildren(runner);
         assertThat(children.size(), is(1));
-        assertThat(children, hasItem(withTestClass(LoginBeanTest.class)));
+        assertThat(children, hasItemWithTestClass(LoginBeanTest.class));
     }
 
     @Test
     public void test_AllFrontendTests_sample() throws Exception {
         Runner runner = ClassRequest.aClass(AllFrontendTests.class).getRunner();
-        List children = getChildren(runner);
+        List<Runner> children = getChildren(runner);
         assertThat(children.size(), is(2));
-        assertThat(children, hasItem(withTestClass(LoginFrontendTest.class)));
-        assertThat(children, hasItem(withTestClass(FillOutFormFrontendTest.class)));
+        assertThat(children, hasItemWithTestClass(LoginFrontendTest.class));
+        assertThat(children, hasItemWithTestClass(FillOutFormFrontendTest.class));
     }
 
-    private List getChildren(Runner runner) throws Exception {
+    private List<Runner> getChildren(Runner runner) throws Exception {
         Field fRunnersField = Suite.class.getDeclaredField("fRunners");
         fRunnersField.setAccessible(true);
-        return (List) fRunnersField.get(runner);
+        // noinspection unchecked
+        return (List<Runner>) fRunnersField.get(runner);
+    }
+
+    private Matcher<Iterable<? super Runner>> hasItemWithTestClass(Class<?> testClass) {
+        return hasItem(withTestClass(testClass));
     }
 
     private Matcher<Runner> withTestClass(final Class<?> testClass) {
