@@ -5,6 +5,7 @@ import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -18,15 +19,16 @@ import java.util.HashSet;
 import java.util.regex.Pattern;
 
 /**
- * A replacement for the JUnit {@link Suite} runner, which allows you to specify the children classes
- * of your test suite class using a <a href="http://ant.apache.org/manual/dirtasks.html#patterns">wildcard pattern</a>.<br />
+ * A replacement for the JUnit {@link Suite} runner, which allows you to specify
+ * the children classes of your test suite class using a
+ * <a href="http://ant.apache.org/manual/dirtasks.html#patterns">wildcard pattern</a>.<br />
  * Example:<pre>
- *     &#64;RunWith(Suite.class)
+ *     &#64;RunWith(WildcardPatternSuite.class)
  *     &#64;SuiteClasses("&#42;&#42;/&#42;Test.class")
  *     public class AllTests {}
  * </pre>
  */
-public class Suite extends org.junit.runners.Suite {
+public class WildcardPatternSuite extends Suite {
 
     private static Class<?>[] getSuiteClasses(Class<?> klass) throws InitializationError {
         final org.junit.runners.Suite.SuiteClasses annotation1 = klass.getAnnotation(org.junit.runners.Suite.SuiteClasses.class);
@@ -125,7 +127,7 @@ public class Suite extends org.junit.runners.Suite {
         }
     }
 
-    public Suite(Class<?> klass, RunnerBuilder builder) throws InitializationError {
+    public WildcardPatternSuite(Class<?> klass, RunnerBuilder builder) throws InitializationError {
         super(builder, klass, getSuiteClasses(klass));
     }
 }
