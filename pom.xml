@@ -96,6 +96,16 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.10</version>
+                <!-- See http://maven.apache.org/plugins/maven-surefire-plugin -->
+                <configuration>
+                    <excludes>
+                        <exclude>**/samples/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

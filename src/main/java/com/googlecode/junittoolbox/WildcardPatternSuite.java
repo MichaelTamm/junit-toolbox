@@ -99,16 +99,19 @@ public class WildcardPatternSuite extends Suite {
         }
     }
 
-    private static Pattern convertWildcardPatternToRegex(String globPattern) {
-        String s = globPattern;
+    private static Pattern convertWildcardPatternToRegex(String wildCardPattern) throws InitializationError {
+        String s = wildCardPattern;
         while (s.contains("***")) {
             s = s.replace("***", "**");
         }
         s = s.replace(".", "[.]");
-        s = s.replace("**", "::");
+        s = s.replace("/**/", "/::/");
         s = s.replace("*", "([^/]*)");
-        s = s.replace("::", "(.*)");
+        s = s.replace("/::/", "((/.*/)|(/))");
         s = s.replace("?", ".");
+        if (s.contains("**")) {
+            throw new InitializationError("Invalid wildcard pattern");
+        }
         return Pattern.compile(s);
     }
 
