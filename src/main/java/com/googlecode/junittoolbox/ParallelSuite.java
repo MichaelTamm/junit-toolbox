@@ -5,7 +5,7 @@ import org.junit.runners.model.RunnerBuilder;
 
 /**
  * An extension of the {@link WildcardPatternSuite} runner, which executes
- * its children classes concurrently.You can specify the maximum number
+ * its children classes concurrently. You can specify the maximum number
  * of parallel test threads using the system property <code>maxParallelTestThreads</code>.
  * If this system property is not specified, the maximum number of test threads
  * will be the number of {@link Runtime#availableProcessors() available processors.}

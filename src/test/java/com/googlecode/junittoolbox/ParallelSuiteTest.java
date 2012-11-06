@@ -61,7 +61,7 @@ public class ParallelSuiteTest {
         Result result = JUnitCore.runClasses(Example2.class);
         assertTrue(result.wasSuccessful());
         assertEquals(4, result.getRunCount());
-        assertNotSame(ParallelRunnerTest.thread1, ParallelRunnerTest.thread2);
+        assertNotSame(ParallelRunnerTest.Example.thread1, ParallelRunnerTest.Example.thread2);
     }
 
     @RunWith(ParallelSuite.class)

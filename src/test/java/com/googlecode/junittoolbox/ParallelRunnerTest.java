@@ -13,12 +13,11 @@ import static org.junit.Assert.*;
 
 public class ParallelRunnerTest {
 
-    static volatile Thread thread1 = null;
-    static volatile Thread thread2 = null;
-
     @RunWith(ParallelRunner.class)
     public static class Example {
         private static volatile CountDownLatch latch;
+        static volatile Thread thread1;
+        static volatile Thread thread2;
 
         @BeforeClass
         public static void init() {
@@ -45,8 +44,8 @@ public class ParallelRunnerTest {
         Result result = JUnitCore.runClasses(Example.class);
         assertTrue(result.wasSuccessful());
         assertEquals(2, result.getRunCount());
-        assertNotNull(thread1);
-        assertNotNull(thread2);
-        assertNotSame(thread1, thread2);
+        assertNotNull(Example.thread1);
+        assertNotNull(Example.thread2);
+        assertNotSame(Example.thread1, Example.thread2);
     }
 }
