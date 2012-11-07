@@ -1,33 +1,50 @@
 package com.googlecode.junittoolbox;
 
-import org.hamcrest.CustomTypeSafeMatcher;
+import org.hamcrest.CustomMatcher;
 import org.hamcrest.Matcher;
 import org.junit.runner.Runner;
-import org.junit.runners.Suite;
+import org.junit.runners.ParentRunner;
+import org.junit.runners.model.FrameworkMethod;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.*;
 
 public class TestHelper {
 
-    static List<Runner> getChildren(Runner runner) throws Exception {
-        Field fRunnersField = Suite.class.getDeclaredField("fRunners");
-        fRunnersField.setAccessible(true);
-        // noinspection unchecked
-        return (List<Runner>) fRunnersField.get(runner);
+    static List<?> getChildren(Runner runner) throws Exception {
+        Method getFilteredChildren = ParentRunner.class.getDeclaredMethod("getFilteredChildren");
+        getFilteredChildren.setAccessible(true);
+        return (List<?>) getFilteredChildren.invoke(runner);
     }
 
-    static Matcher<Iterable<? super Runner>> hasItemWithTestClass(Class<?> testClass) {
+    static Matcher<Iterable<?>> hasItemWithTestClass(Class<?> testClass) {
+        // noinspection unchecked
         return hasItem(withTestClass(testClass));
     }
 
-    private static Matcher<Runner> withTestClass(final Class<?> testClass) {
-        return new CustomTypeSafeMatcher<Runner>("with test class " + testClass.getName()) {
+    private static Matcher withTestClass(final Class<?> testClass) {
+        return new CustomMatcher("with test class " + testClass.getName()) {
             @Override
-            protected boolean matchesSafely(Runner runner) {
-                return testClass.equals(runner.getDescription().getTestClass());
+            public boolean matches(Object item) {
+                return item instanceof Runner
+                       && testClass.equals(((Runner) item).getDescription().getTestClass());
+            }
+        };
+    }
+
+    static Matcher<Iterable<?>> hasItemWithTestMethod(String methodName) {
+        // noinspection unchecked
+        return hasItem(withTestMethod(methodName));
+    }
+
+    private static Matcher withTestMethod(final String methodName) {
+        return new CustomMatcher("with test method " + methodName) {
+            @Override
+            public boolean matches(Object item) {
+                return item instanceof FrameworkMethod
+                       && methodName.equals(((FrameworkMethod) item).getName());
             }
         };
     }

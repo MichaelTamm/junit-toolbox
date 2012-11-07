@@ -5,6 +5,8 @@ import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.junit.experimental.categories.Categories;
+import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -18,14 +20,27 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
+import static org.junit.experimental.categories.Categories.IncludeCategory;
+import static org.junit.experimental.categories.Categories.ExcludeCategory;
+import static org.junit.experimental.categories.Categories.CategoryFilter;
+
 /**
- * A replacement for the JUnit {@link Suite} runner, which allows you to specify
- * the children classes of your test suite class using a
- * <a href="http://ant.apache.org/manual/dirtasks.html#patterns">wildcard pattern</a>.<br />
+ * A replacement for the JUnit runners {@link Suite} and {@link Categories},
+ * which allows you to specify the children classes of your test suite class
+ * using a <a href="http://ant.apache.org/manual/dirtasks.html#patterns">wildcard pattern</a>.
  * Example:<pre>
  *     &#64;RunWith(WildcardPatternSuite.class)
  *     &#64;SuiteClasses("&#42;&#42;/&#42;Test.class")
  *     public class AllTests {}
+ * </pre>
+ * Because it is also a replacement for the {@link Categories} runner,
+ * you can use the {@link IncludeCategory @IncludeCategory} and
+ * {@link ExcludeCategory @ExcludeCategory} annotations too.
+ * Example:<pre>
+ *     &#64;RunWith(WildcardPatternSuite.class)
+ *     &#64;SuiteClasses("&#42;&#42;/&#42;Test.class")
+ *     &#64;IncludeCategory(SlowTests.class)
+ *     public class OnlySlowTests {}
  * </pre>
  */
 public class WildcardPatternSuite extends Suite {
@@ -132,5 +147,16 @@ public class WildcardPatternSuite extends Suite {
 
     public WildcardPatternSuite(Class<?> klass, RunnerBuilder builder) throws InitializationError {
         super(builder, klass, getSuiteClasses(klass));
+        IncludeCategory includeCategoryAnnotation= klass.getAnnotation(IncludeCategory.class);
+        Class<?> includedCategory = (includeCategoryAnnotation == null ? null : includeCategoryAnnotation.value());
+        ExcludeCategory excludeCategoryAnnotation= klass.getAnnotation(ExcludeCategory.class);
+        Class<?> excludedCategory = (excludeCategoryAnnotation == null ? null : excludeCategoryAnnotation.value());
+        if (includedCategory != null || excludedCategory != null) {
+            try {
+                filter(new CategoryFilter(includedCategory, excludedCategory));
+            } catch (NoTestsRemainException e) {
+                throw new InitializationError(e);
+            }
+        }
     }
 }

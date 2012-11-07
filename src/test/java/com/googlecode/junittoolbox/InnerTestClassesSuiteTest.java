@@ -17,7 +17,7 @@ public class InnerTestClassesSuiteTest {
     @Test
     public void test() throws Exception {
         Runner runner = ClassRequest.aClass(LoginBeanTest.class).getRunner();
-        List<Runner> children = getChildren(runner);
+        List<?> children = getChildren(runner);
         assertThat(children.size(), is(3));
         assertThat(children, hasItemWithTestClass(LoginBeanTest.UnitTests.class));
         assertThat(children, hasItemWithTestClass(LoginBeanTest.IntegrationTests.class));

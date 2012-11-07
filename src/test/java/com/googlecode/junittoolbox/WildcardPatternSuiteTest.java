@@ -1,9 +1,7 @@
 package com.googlecode.junittoolbox;
 
-import com.googlecode.junittoolbox.samples.AllFrontendTests;
+import com.googlecode.junittoolbox.samples.*;
 import com.googlecode.junittoolbox.samples.AllTests;
-import com.googlecode.junittoolbox.samples.AllTestsInThisPackage;
-import com.googlecode.junittoolbox.samples.LoginBeanTest;
 import com.googlecode.junittoolbox.samples.frontend.FillOutFormFrontendTest;
 import com.googlecode.junittoolbox.samples.frontend.LoginFrontendTest;
 import org.junit.Test;
@@ -21,7 +19,7 @@ public class WildcardPatternSuiteTest {
     @Test
     public void test_AllTests_sample() throws Exception {
         Runner runner = ClassRequest.aClass(AllTests.class).getRunner();
-        List<Runner> children = getChildren(runner);
+        List<?> children = getChildren(runner);
         assertThat(children.size(), is(3));
         assertThat(children, hasItemWithTestClass(LoginBeanTest.class));
         assertThat(children, hasItemWithTestClass(LoginFrontendTest.class));
@@ -31,7 +29,7 @@ public class WildcardPatternSuiteTest {
     @Test
     public void test_AllTestsInThisPackage_sample() throws Exception {
         Runner runner = ClassRequest.aClass(AllTestsInThisPackage.class).getRunner();
-        List<Runner> children = getChildren(runner);
+        List<?> children = getChildren(runner);
         assertThat(children.size(), is(1));
         assertThat(children, hasItemWithTestClass(LoginBeanTest.class));
     }
@@ -39,9 +37,21 @@ public class WildcardPatternSuiteTest {
     @Test
     public void test_AllFrontendTests_sample() throws Exception {
         Runner runner = ClassRequest.aClass(AllFrontendTests.class).getRunner();
-        List<Runner> children = getChildren(runner);
+        List<?> children = getChildren(runner);
         assertThat(children.size(), is(2));
         assertThat(children, hasItemWithTestClass(LoginFrontendTest.class));
         assertThat(children, hasItemWithTestClass(FillOutFormFrontendTest.class));
+    }
+
+    @Test
+    public void test_AllSlowTests_sample() throws Exception {
+        Runner runner = ClassRequest.aClass(AllSlowTests.class).getRunner();
+        List<?> children1 = getChildren(runner);
+        assertThat(children1.size(), is(1));
+        assertThat(children1, hasItemWithTestClass(LoginFrontendTest.class));
+        final Runner loginFrontendTestRunner = (Runner) children1.get(0);
+        List<?> children2 = getChildren(loginFrontendTestRunner);
+        assertThat(children2.size(), is(1));
+        assertThat(children2, hasItemWithTestMethod("slowTest"));
     }
 }
