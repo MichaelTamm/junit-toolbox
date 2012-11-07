@@ -17,6 +17,26 @@ import java.util.List;
  * <a href="https://github.com/KentBeck/junit">JUnit</a>,
  * it detects if an inner class is actually a test class
  * and ignores all other inner classes.
+ * Example:<pre>
+ *     &#64;RunWith(InnerTestClassesSuite.class)
+ *     public class LoginBeanTests {
+ *
+ *         public static class UnitTests {
+ *             &#64;Test
+ *             public void test1() { ... }
+ *         }
+ *
+ *         &#64;Configuration
+ *         public static class IntegrationTestsConfig { ... }
+ *
+ *         &#64;RunWith(SpringJUnit4ClassRunner.class)
+ *         &#64;ContextConfiguration(classes = IntegrationTestsConfig.class)
+ *         public static class IntegrationTests {
+ *             &#64;Test
+ *             public void test2() { ... }
+ *         }
+ *     }
+ * </pre>
  */
 public class InnerTestClassesSuite extends Suite {
 
