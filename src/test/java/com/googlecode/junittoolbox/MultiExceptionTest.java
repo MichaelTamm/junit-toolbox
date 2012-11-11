@@ -22,7 +22,7 @@ public class MultiExceptionTest {
     }
 
     private MultiException setUpMultiExceptionWithTwoNestedExceptions() {
-        final MultiException me = new MultiException();
+        MultiException me = new MultiException();
         try { f(); } catch (IOException e) { me.add(e); }
         try { g(); } catch (SQLException e) { me.add(e); }
         return me;
@@ -30,7 +30,7 @@ public class MultiExceptionTest {
 
     @Test
     public void test_getMessage() {
-        final MultiException me = setUpMultiExceptionWithTwoNestedExceptions();
+        MultiException me = setUpMultiExceptionWithTwoNestedExceptions();
         assertThat(me.getMessage(), allOf(
             containsString("IOException: foo"),
             containsString("SQLException: bar")
@@ -39,9 +39,9 @@ public class MultiExceptionTest {
 
     @Test
     public void test_getMessage_with_nested_exception() {
-        final Exception e1 = new IOException("foo");
-        final Exception e2 = new ExecutionException(e1);
-        final MultiException me = new MultiException();
+        Exception e1 = new IOException("foo");
+        Exception e2 = new ExecutionException(e1);
+        MultiException me = new MultiException();
         me.add(e2);
         assertThat(me.getMessage(), allOf(
             containsString("java.io.IOException: foo"),
@@ -51,8 +51,8 @@ public class MultiExceptionTest {
 
     @Test
     public void test_printStackTrace() {
-        final MultiException me = setUpMultiExceptionWithTwoNestedExceptions();
-        final StringWriter sw = new StringWriter();
+        MultiException me = setUpMultiExceptionWithTwoNestedExceptions();
+        StringWriter sw = new StringWriter();
         me.printStackTrace(new PrintWriter(sw));
         assertThat(sw.toString(), allOf(
             containsString("2 nested exceptions:"),
@@ -64,14 +64,14 @@ public class MultiExceptionTest {
     }
 
     @Test
-    public void test_printStackTrace_after_throwRuntimeExceptionIfNotEmpty() {
-        final MultiException me = setUpMultiExceptionWithTwoNestedExceptions();
+    public void test_printStackTrace_after_throwIfNotEmpty() {
+        MultiException me = setUpMultiExceptionWithTwoNestedExceptions();
         try {
-            me.throwRuntimeExceptionIfNotEmpty();
-            fail("RuntimeException expected.");
-        } catch (RuntimeException e) {
+            me.throwIfNotEmpty();
+            fail("MultiException expected.");
+        } catch (MultiException expected) {
             final StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
+            expected.printStackTrace(new PrintWriter(sw));
             assertThat(sw.toString(), allOf(
                 containsString("2 nested exceptions:"),
                 containsString("IOException: foo"),
@@ -80,5 +80,38 @@ public class MultiExceptionTest {
                 containsString("at com.googlecode.junittoolbox.MultiExceptionTest.g(MultiExceptionTest.java:21)")
             ));
         }
+    }
+
+    @Test
+    public void test_throwIfEmpty() {
+        MultiException me = new MultiException();
+        // The following call should not throw an exception ...
+        me.throwIfNotEmpty();
+
+        IOException e1 = new IOException("foo");
+        me.add(e1);
+        try {
+            me.throwIfNotEmpty();
+            fail("Exception expected");
+        } catch (Exception expected) {
+            assertSame(e1, expected);
+        }
+
+        me.add(new SQLException("bar"));
+        try {
+            me.throwIfNotEmpty();
+            fail("MultiException expected.");
+        } catch (MultiException expected) {
+            assertSame(me, expected);
+        }
+    }
+
+    @Test
+    public void test_isEmpty() {
+        MultiException me = new MultiException();
+        assertTrue(me.isEmpty());
+
+        me.add(new Throwable());
+        assertFalse(me.isEmpty());
     }
 }

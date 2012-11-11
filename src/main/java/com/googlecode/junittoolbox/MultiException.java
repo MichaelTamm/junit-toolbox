@@ -19,6 +19,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.googlecode.junittoolbox.TigerThrower.sneakyThrow;
+
 /**
  * Allows multiple exceptions to be thrown as a single exception -- adapted from Jetty.
  */
@@ -53,41 +55,12 @@ public class MultiException extends RuntimeException {
      * if it contains a single <code>Throwable</code> that is thrown,
      * otherwise this <code>MultiException</code> is thrown.
      */
-    public void throwExceptionIfNotEmpty() throws Exception {
+    public void throwIfNotEmpty() {
         if (nested.isEmpty()) {
             // Do nothing
         } else if (nested.size() == 1) {
-            Throwable throwable = nested.get(0);
-            if (throwable instanceof Error) {
-                throw (Error) throwable;
-            } else if (throwable instanceof Exception) {
-                throw (Exception) throwable;
-            } else {
-                throw new Exception(throwable);
-            }
-        } else {
-            throw this;
-        }
-    }
-
-    /**
-     * If this multi exception is empty then no action is taken,
-     * if it contains a single <code>RuntimeException<code> that is thrown,
-     * if it contains a single <code>Error<code> that is thrown,
-     * otherwise this <code>MultiException</code> is thrown.
-     */
-    public void throwRuntimeExceptionIfNotEmpty() throws RuntimeException {
-        if (nested.isEmpty()) {
-            // Do nothing
-        } else if (nested.size() == 1) {
-            Throwable throwable = nested.get(0);
-            if (throwable instanceof RuntimeException) {
-                throw (RuntimeException) throwable;
-            } else if (throwable instanceof Error) {
-                throw (Error) throwable;
-            } else {
-                throw new RuntimeException(throwable);
-            }
+            Throwable t = nested.get(0);
+            sneakyThrow(t);
         } else {
             throw this;
         }

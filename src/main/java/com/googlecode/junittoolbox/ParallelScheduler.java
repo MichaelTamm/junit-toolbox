@@ -77,10 +77,10 @@ class ParallelScheduler implements RunnerScheduler {
                 // Note: Because we have added all tasks via addFirst into _asyncTasks,
                 // task.join() is able to steal tasks from other worker threads,
                 // if there are tasks, which have not been started yet ...
-                // from other threads ...
+                // from other worker threads ...
                 try { task.join(); } catch (Throwable t) { me.add(t); }
             }
-            me.throwRuntimeExceptionIfNotEmpty();
+            me.throwIfNotEmpty();
         }
     }
 }
