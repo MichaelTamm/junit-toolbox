@@ -52,7 +52,11 @@ class ParallelScheduler implements RunnerScheduler {
                 _asyncTasks.addFirst(FORK_JOIN_POOL.submit(_lastScheduledChild));
             }
         }
-        // Remember scheduled child ...
+        // Note: We don't schedule the childStatement immediately here,
+        // but remember it, so that we can synchronously execute the
+        // last scheduled child in the finished method() -- this way,
+        // the current thread does not immediately call join() in the
+        // finished() method, which might block it ...
         _lastScheduledChild = childStatement;
     }
 
@@ -64,14 +68,16 @@ class ParallelScheduler implements RunnerScheduler {
                 // Execute the last scheduled child in the current thread ...
                 try { _lastScheduledChild.run(); } catch (Throwable t) { me.add(t); }
             } else {
-                // Submit the last scheduled child to the ForkJoinPool too ...
+                // Submit the last scheduled child to the ForkJoinPool too,
+                // because all tests should run in the worker threads ...
                 _asyncTasks.addFirst(FORK_JOIN_POOL.submit(_lastScheduledChild));
             }
-            // Make sure all asynchronously executed children are done ...
-            // Note: Because we have added all tasks via addFirst into _asyncTasks,
-            // task.join() is able to steal tasks, which have not been started yet,
-            // from other threads ...
+            // Make sure all asynchronously executed children are done, before we return ...
             for (ForkJoinTask<?> task : _asyncTasks) {
+                // Note: Because we have added all tasks via addFirst into _asyncTasks,
+                // task.join() is able to steal tasks from other worker threads,
+                // if there are tasks, which have not been started yet ...
+                // from other threads ...
                 try { task.join(); } catch (Throwable t) { me.add(t); }
             }
             me.throwRuntimeExceptionIfNotEmpty();
