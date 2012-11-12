@@ -18,8 +18,9 @@ import static com.googlecode.junittoolbox.TigerThrower.sneakyThrow;
 
 /**
  * An extension of the JUnit {@link Theories} runner, which executes
- * all <code>@Test</code> methods and all <code>@Theory</code> methods
- * concurrently. Example:<pre>
+ * all <code>@Test</code> methods concurrently. Furthermore all calls
+ * to <code>@Theory</code> methods with different parameter assignments
+ * are executes concurrently too. Example:<pre>
  *     &#64;RunWith(ParallelRunner.class)
  *     <b>public</b> <b>class</b> FooTest {
  *         &#64;Test
