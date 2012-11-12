@@ -12,7 +12,7 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 import java.util.Deque;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import static com.googlecode.junittoolbox.TigerThrower.sneakyThrow;
 
@@ -51,7 +51,7 @@ public class ParallelRunner extends Theories {
     }
 
     public class ParallelTheoryAnchor extends TheoryAnchor {
-        private final Deque<ForkJoinTask<?>> _asyncRuns = new ConcurrentLinkedDeque<ForkJoinTask<?>>();
+        private final Deque<ForkJoinTask<?>> _asyncRuns = new LinkedBlockingDeque<ForkJoinTask<?>>();
         private volatile boolean _wasRunWithAssignmentCalled;
 
         public ParallelTheoryAnchor(FrameworkMethod method, TestClass testClass) {
