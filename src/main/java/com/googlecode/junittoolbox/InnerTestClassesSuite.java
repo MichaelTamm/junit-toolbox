@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * Runs all inner test classes of the class
- * annotated with <code>RunWith(InnerTestClassesSuite&#46;class)</code>.
+ * annotated with <code>&#64;RunWith(InnerTestClassesSuite&#46;class)</code>.
  * In contrast to the {@link Enclosed} runner provided by
  * <a href="https://github.com/KentBeck/junit">JUnit</a>,
  * it detects if an inner class is actually a test class
