@@ -12,14 +12,12 @@
 // limitations under the License.
 // ========================================================================
 
-package com.googlecode.junittoolbox;
+package com.googlecode.junittoolbox.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.googlecode.junittoolbox.TigerThrower.sneakyThrow;
 
 /**
  * Allows multiple exceptions to be thrown as a single exception -- adapted from Jetty.
@@ -60,7 +58,7 @@ public class MultiException extends RuntimeException {
             // Do nothing
         } else if (nested.size() == 1) {
             Throwable t = nested.get(0);
-            sneakyThrow(t);
+            TigerThrower.sneakyThrow(t);
         } else {
             throw this;
         }

@@ -1,4 +1,4 @@
-package com.googlecode.junittoolbox;
+package com.googlecode.junittoolbox.util;
 
 /**
  * This class provides the method {@link #sneakyThrow(Throwable)} which

@@ -1,4 +1,4 @@
-package com.googlecode.junittoolbox;
+package com.googlecode.junittoolbox.util;
 
 import org.junit.Test;
 
@@ -57,9 +57,9 @@ public class MultiExceptionTest {
         assertThat(sw.toString(), allOf(
             containsString("2 nested exceptions:"),
             containsString("IOException: foo"),
-            containsString("at com.googlecode.junittoolbox.MultiExceptionTest.f(MultiExceptionTest.java:17)"),
+            containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.f(MultiExceptionTest.java:17)"),
             containsString("SQLException: bar"),
-            containsString("at com.googlecode.junittoolbox.MultiExceptionTest.g(MultiExceptionTest.java:21)")
+            containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.g(MultiExceptionTest.java:21)")
         ));
     }
 
@@ -75,9 +75,9 @@ public class MultiExceptionTest {
             assertThat(sw.toString(), allOf(
                 containsString("2 nested exceptions:"),
                 containsString("IOException: foo"),
-                containsString("at com.googlecode.junittoolbox.MultiExceptionTest.f(MultiExceptionTest.java:17)"),
+                containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.f(MultiExceptionTest.java:17)"),
                 containsString("SQLException: bar"),
-                containsString("at com.googlecode.junittoolbox.MultiExceptionTest.g(MultiExceptionTest.java:21)")
+                containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.g(MultiExceptionTest.java:21)")
             ));
         }
     }

@@ -14,7 +14,7 @@ import org.junit.runners.model.TestClass;
 import java.util.Deque;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import static com.googlecode.junittoolbox.TigerThrower.sneakyThrow;
+import static com.googlecode.junittoolbox.util.TigerThrower.sneakyThrow;
 
 /**
  * An extension of the JUnit {@link Theories} runner, which executes

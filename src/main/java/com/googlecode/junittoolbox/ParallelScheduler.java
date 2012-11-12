@@ -1,5 +1,6 @@
 package com.googlecode.junittoolbox;
 
+import com.googlecode.junittoolbox.util.MultiException;
 import jsr166y.ForkJoinPool;
 import jsr166y.ForkJoinTask;
 import jsr166y.ForkJoinWorkerThread;
