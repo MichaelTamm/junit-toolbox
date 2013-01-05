@@ -25,7 +25,7 @@ import java.util.List;
 public class MultiException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
-    private static final String EXCEPTION_SEPARATOR = "\n______________________________________________________________________\n";
+    private static final String EXCEPTION_SEPARATOR = "\n\t______________________________________________________________________\n";
 
     private final List<Throwable> nested = new ArrayList<Throwable>();
 

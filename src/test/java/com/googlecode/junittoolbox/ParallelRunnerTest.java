@@ -58,9 +58,7 @@ public class ParallelRunnerTest {
         private static Thread[] threads = new Thread[2];
 
         @DataPoints
-        public static int[] dataPoints() {
-            return new int[] { 0, 1 };
-        }
+        public static int[] TEST_DATA = { 0, 1 };
 
         @Theory
         public void theory(int i) {
