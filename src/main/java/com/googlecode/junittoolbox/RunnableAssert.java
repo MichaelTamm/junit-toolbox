@@ -15,7 +15,7 @@ public abstract class RunnableAssert {
     /**
      * This method might be executed multiple times
      * by {@link PollingWait#until}, if it throws any
-     * {link Error} or {@link Exception}.
+     * {@link Error} or {@link Exception}.
      */
     public abstract void run() throws Exception;
 
