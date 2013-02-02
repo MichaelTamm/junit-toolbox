@@ -13,12 +13,13 @@ import java.lang.annotation.*;
 @Inherited
 public @interface SuiteClasses {
     /**
-     * <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Wildcard pattern</a>
+     * <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Wildcard pattern(s)</a>
      * relative to the directory containing the actual test suite class
      * annotated with <code>@RunWith(WildcardPatternSuite&#46;class)</code> or
      * <code>@RunWith(ParallelSuite&#46;class)</code>,
-     * <strong>must not</strong> start with a <code>'/'</code> character,
-     * and <strong>must</strong> end with <code>"&#46;class"</code>.
+     * a wildcard pattern <strong>must not</strong> start with a <code>'/'</code> character,
+     * and <strong>must</strong> end with <code>"&#46;class"</code> (unless it starts
+     * with a <code>'!'</code> character, which means matching class files are excluded).
      */
-    public String value();
+    public String[] value();
 }

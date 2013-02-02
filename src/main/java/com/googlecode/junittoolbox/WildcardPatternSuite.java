@@ -2,7 +2,6 @@ package com.googlecode.junittoolbox;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
-import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.junit.experimental.categories.Categories;
@@ -15,14 +14,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
-import static org.junit.experimental.categories.Categories.IncludeCategory;
-import static org.junit.experimental.categories.Categories.ExcludeCategory;
-import static org.junit.experimental.categories.Categories.CategoryFilter;
+import static org.junit.experimental.categories.Categories.*;
 
 /**
  * A replacement for the JUnit runners {@link Suite} and {@link Categories},
@@ -33,10 +28,14 @@ import static org.junit.experimental.categories.Categories.CategoryFilter;
  *     &#64;SuiteClasses("&#42;&#42;/&#42;Test.class")
  *     public class AllTests {}
  * </pre>
+ * You can also specify multiple patterns as well as exclude patterns:<pre>
+ *     &#64;RunWith(WildcardPatternSuite.class)
+ *     &#64;SuiteClasses({"&#42;&#42;/&#42;Test.class", "!gui/&#42;&#42;"})
+ *     public class AllButGuiTests {}
+ * </pre>
  * Because it is also a replacement for the {@link Categories} runner,
  * you can use the {@link IncludeCategory @IncludeCategory} and
- * {@link ExcludeCategory @ExcludeCategory} annotations too.
- * Example:<pre>
+ * {@link ExcludeCategory @ExcludeCategory} annotations too:<pre>
  *     &#64;RunWith(WildcardPatternSuite.class)
  *     &#64;SuiteClasses("&#42;&#42;/&#42;Test.class")
  *     &#64;IncludeCategory(SlowTests.class)
@@ -56,25 +55,51 @@ public class WildcardPatternSuite extends Suite {
         return union(suiteClasses1, suiteClasses2);
     }
 
-    private static Class<?>[] findSuiteClasses(Class<?> klass, String wildcardPattern) throws InitializationError {
-        if (wildcardPattern.startsWith("/")) {
-            throw new InitializationError("the wildcard pattern for the SuiteClasses annotation must not start with a '/' character");
-        }
-        if (!wildcardPattern.endsWith(".class")) {
-            throw new InitializationError("the wildcard pattern for the SuiteClasses annotation must end with \".class\"");
-        }
+    private static Class<?>[] findSuiteClasses(Class<?> klass, String... wildcardPatterns) throws InitializationError {
         final File baseDir = getBaseDir(klass);
         try {
             final String basePath = baseDir.getCanonicalPath().replace('\\', '/');
-            final Pattern wildcardPatternRegex = convertWildcardPatternToRegex("/" + wildcardPattern);
+            final List<Pattern> includePatterns = new ArrayList<Pattern>();
+            final List<Pattern> excludePatterns = new ArrayList<Pattern>();
+            for (String wildcardPattern : wildcardPatterns) {
+                if (wildcardPattern == null) {
+                    throw new InitializationError("wildcard pattern for the SuiteClasses annotation must not be null");
+                }
+                boolean exclude = wildcardPattern.startsWith("!");
+                if (exclude) {
+                    wildcardPattern = wildcardPattern.substring(1);
+                }
+                if (wildcardPattern.startsWith("/")) {
+                    throw new InitializationError("wildcard pattern for the SuiteClasses annotation must not start with a '/' character");
+                }
+                if (!exclude && !wildcardPattern.endsWith(".class")) {
+                    throw new InitializationError("wildcard pattern for the SuiteClasses annotation must end with \".class\"");
+                }
+                Pattern regex = convertWildcardPatternToRegex("/" + wildcardPattern);
+                (exclude ? excludePatterns : includePatterns).add(regex);
+            }
             final IOFileFilter fileFilter = new AbstractFileFilter() {
                 @Override
                 public boolean accept(File file) {
                     try {
+                        // Never accept directories, hidden files, and inner classes ...
+                        if (file.isDirectory() || file.isHidden() || file.getName().contains("$")) {
+                            return false;
+                        }
                         final String canonicalPath = file.getCanonicalPath().replace('\\', '/');
                         if (canonicalPath.startsWith(basePath)) {
                             final String path = canonicalPath.substring(basePath.length());
-                            return wildcardPatternRegex.matcher(path).matches();
+                            for (Pattern excludePattern : excludePatterns) {
+                                if (excludePattern.matcher(path).matches()) {
+                                    return false;
+                                }
+                            }
+                            for (Pattern includePattern : includePatterns) {
+                                if (includePattern.matcher(path).matches()) {
+                                    return true;
+                                }
+                            }
+                            return false;
                         } else {
                             return false;
                         }
@@ -83,10 +108,9 @@ public class WildcardPatternSuite extends Suite {
                     }
                 }
             };
-            final IOFileFilter dirFilter = (wildcardPattern.contains("/") ? TrueFileFilter.INSTANCE : FalseFileFilter.INSTANCE);
-            final Collection<File> classFiles = FileUtils.listFiles(baseDir, fileFilter, dirFilter);
+            final Collection<File> classFiles = FileUtils.listFiles(baseDir, fileFilter, TrueFileFilter.INSTANCE);
             if (classFiles.isEmpty()) {
-                throw new InitializationError("did not find any *.class file using the specified wildcard pattern " + wildcardPattern + " in directory " + basePath);
+                throw new InitializationError("did not find any *.class file using the specified wildcard patterns " + Arrays.toString(wildcardPatterns) + " in directory " + basePath);
             }
             final String classNamePrefix = (klass.getPackage() == null ? "" : klass.getPackage().getName() + ".");
             final Class<?>[] result = new Class<?>[classFiles.size()];
@@ -101,7 +125,7 @@ public class WildcardPatternSuite extends Suite {
             }
             return result;
         } catch (Exception e) {
-            throw new InitializationError("failed to find " + wildcardPattern + " files in " + baseDir + " -- " + e.getMessage());
+            throw new InitializationError("failed to scan " + baseDir + " using wildcard patterns " + Arrays.toString(wildcardPatterns) + " -- " + e);
         }
     }
 
@@ -119,15 +143,22 @@ public class WildcardPatternSuite extends Suite {
         while (s.contains("***")) {
             s = s.replace("***", "**");
         }
+        String suffix;
+        if (s.endsWith("/**")) {
+            s = s.substring(0, s.length() - 3);
+            suffix = "(.*)";
+        } else {
+            suffix ="";
+        }
         s = s.replace(".", "[.]");
         s = s.replace("/**/", "/::/");
         s = s.replace("*", "([^/]*)");
         s = s.replace("/::/", "((/.*/)|(/))");
         s = s.replace("?", ".");
         if (s.contains("**")) {
-            throw new InitializationError("Invalid wildcard pattern");
+            throw new InitializationError("Invalid wildcard pattern \"" + wildCardPattern + "\"");
         }
-        return Pattern.compile(s);
+        return Pattern.compile(s + suffix);
     }
 
     private static Class<?>[] union(Class<?>[] suiteClasses1, Class<?>[] suiteClasses2) {
