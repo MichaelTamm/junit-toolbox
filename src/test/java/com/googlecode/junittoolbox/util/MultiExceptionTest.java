@@ -1,5 +1,6 @@
 package com.googlecode.junittoolbox.util;
 
+import com.googlecode.junittoolbox.MultithreadingTester;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class MultiExceptionTest {
         me.add(e2);
         assertThat(me.getMessage(), allOf(
             containsString("java.io.IOException: foo"),
-            containsString("MultiExceptionTest.java:42")
+            containsString("MultiExceptionTest.java:43")
         ));
     }
 
@@ -57,9 +58,9 @@ public class MultiExceptionTest {
         assertThat(sw.toString(), allOf(
             containsString("2 nested exceptions:"),
             containsString("IOException: foo"),
-            containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.f(MultiExceptionTest.java:17)"),
+            containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.f(MultiExceptionTest.java:18)"),
             containsString("SQLException: bar"),
-            containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.g(MultiExceptionTest.java:21)")
+            containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.g(MultiExceptionTest.java:22)")
         ));
     }
 
@@ -75,9 +76,9 @@ public class MultiExceptionTest {
             assertThat(sw.toString(), allOf(
                 containsString("2 nested exceptions:"),
                 containsString("IOException: foo"),
-                containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.f(MultiExceptionTest.java:17)"),
+                containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.f(MultiExceptionTest.java:18)"),
                 containsString("SQLException: bar"),
-                containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.g(MultiExceptionTest.java:21)")
+                containsString("at com.googlecode.junittoolbox.util.MultiExceptionTest.g(MultiExceptionTest.java:22)")
             ));
         }
     }
@@ -113,5 +114,22 @@ public class MultiExceptionTest {
 
         me.add(new Throwable());
         assertFalse(me.isEmpty());
+    }
+
+    @Test
+    public void test_thread_safety() {
+        final MultiException me = new MultiException();
+        new MultithreadingTester().add(new Runnable() {
+            @Override
+            public void run() {
+                me.add(new Exception());
+            }
+        }).run();
+        try {
+            me.throwIfNotEmpty();
+            fail();
+        } catch (MultiException expected) {
+            assertThat(expected.getMessage(), startsWith("100000 nested exceptions"));
+        }
     }
 }
