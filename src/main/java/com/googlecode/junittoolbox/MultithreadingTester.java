@@ -3,11 +3,12 @@ package com.googlecode.junittoolbox;
 import com.googlecode.junittoolbox.util.MultiException;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.CountDownLatch;
 
 import static org.mockito.internal.util.Checks.checkItemsNotNull;
@@ -130,6 +131,11 @@ public class MultithreadingTester {
             }
         };
     }
+
+    private Thread monitorThread;
+    private Thread[] workerThreads;
+    private Set<Long> idsOfDeadlockedThreads = new CopyOnWriteArraySet<Long>();
+
     /**
      * Starts multiple threads, which execute the added {@link RunnableAssert}s
      * several times. This method blocks until all started threads are finished.
@@ -142,21 +148,67 @@ public class MultithreadingTester {
      */
     public void run() {
         if (runnableAsserts.size() > numThreads) {
-            throw new IllegalStateException("You added more runnable asserts (" + runnableAsserts.size() + ") than the number of threads (" + numThreads + ") used by this MultithreadingTester");
+            throw new IllegalStateException("You added more RunnableAsserts (" + runnableAsserts.size() + ") than the number of threads (" + numThreads + ") configured for this MultithreadingTester");
         }
         if (runnableAsserts.isEmpty()) {
-            throw new IllegalStateException("You must add at least 1 runnable assert before you can call run()");
+            throw new IllegalStateException("You must add at least 1 RunnableAssert before you can call run()");
         }
-        Thread[] threads = new Thread[numThreads];
+        final MultiException me = new MultiException();
+        startMonitorThread(me);
+        try {
+            startWorkerThreads(me);
+            joinWorkerThreads();
+        } finally {
+            stopMonitorThread();
+        }
+        me.throwIfNotEmpty();
+    }
+
+    private void startMonitorThread(final MultiException me) {
+        final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        final Set<Long> knownDeadlockedThreadIds = asSet(threadMXBean.findDeadlockedThreads());
+        monitorThread = new Thread("MultithreadingTester-monitor") {
+            @Override
+            public void run() {
+                try {
+                    while (!interrupted()) {
+                        long[] threadIds = threadMXBean.findDeadlockedThreads();
+                        if (threadIds != null) {
+                            Set<Long> temp = asSet(threadIds);
+                            temp.removeAll(knownDeadlockedThreadIds);
+                            if (!temp.isEmpty()) {
+                                idsOfDeadlockedThreads.addAll(temp);
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("Detected ").append(threadIds.length).append(" deadlocked threads:");
+                                for (ThreadInfo threadInfo : threadMXBean.getThreadInfo(threadIds, true, true)) {
+                                    sb.append('\n').append(threadInfo);
+                                }
+                                me.add(new RuntimeException(sb.toString()));
+                                return;
+                            }
+                        }
+                        Thread.sleep(1000);
+                    }
+                } catch (InterruptedException expected) {
+                } catch (Throwable unexpected) {
+                    me.add(unexpected);
+                }
+            }
+        };
+        monitorThread.setPriority(Thread.MAX_PRIORITY);
+        monitorThread.start();
+    }
+
+    private void startWorkerThreads(final MultiException me) {
+        workerThreads = new Thread[numThreads];
         Iterator<RunnableAssert> i = runnableAsserts.iterator();
         final CountDownLatch latch = new CountDownLatch(numThreads);
-        final MultiException me = new MultiException();
         for (int j = 0; j < numThreads; ++j) {
             if (!i.hasNext()) {
                 i = runnableAsserts.iterator();
             }
             final RunnableAssert runnableAssert = i.next();
-            threads[j] = new Thread("MultithreadingTester-thread-" + (j + 1)) {
+            Thread workerThread = new Thread("MultithreadingTester-worker-" + (j + 1)) {
                 @Override
                 public void run() {
                     try {
@@ -170,16 +222,49 @@ public class MultithreadingTester {
                     }
                 }
             };
-            threads[j].start();
+            workerThread.start();
+            workerThreads[j] = workerThread;
         }
-        for (int j = 0; j < numThreads; ++j) {
-            try {
-                threads[j].join();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Got interrupted", e);
+    }
+
+    private void joinWorkerThreads() {
+        boolean foundAliveWorkerThread = false;
+        do {
+            for (int i = 0; i < numThreads; ++i) {
+                try {
+                    Thread workerThread = workerThreads[i];
+                    workerThread.join(100);
+                    if (workerThread.isAlive() && !idsOfDeadlockedThreads.contains(workerThread.getId())) {
+                        foundAliveWorkerThread = true;
+                    }
+                } catch (InterruptedException e) {
+                    for (int j = 0; j < numThreads; ++j) {
+                        workerThreads[j].interrupt();
+                    }
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Got interrupted", e);
+                }
+            }
+        } while (foundAliveWorkerThread && monitorThread.isAlive());
+    }
+
+    private void stopMonitorThread() {
+        monitorThread.interrupt();
+        try {
+            monitorThread.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Got interrupted", e);
+        }
+    }
+
+    private Set<Long> asSet(long[] array) {
+        Set<Long> set = new HashSet<Long>();
+        if (array != null) {
+            for (long x : array) {
+                set.add(x);
             }
         }
-        me.throwIfNotEmpty();
+        return set;
     }
 }

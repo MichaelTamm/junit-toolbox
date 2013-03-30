@@ -2,6 +2,7 @@ package com.googlecode.junittoolbox;
 
 import org.junit.Test;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.*;
@@ -59,6 +60,49 @@ public class MultithreadingTesterTest {
             mt.run();
             fail("IllegalStateException expected");
         } catch (IllegalStateException expected) {}
+    }
+
+    @Test
+    public void test_that_deadlock_is_detected() {
+        try {
+            final Object lock1 = new Object();
+            final CountDownLatch latch1 = new CountDownLatch(1);
+            final Object lock2 = new Object();
+            final CountDownLatch latch2 = new CountDownLatch(1);
+            new MultithreadingTester().numThreads(2).numRoundsPerThread(1).add(
+                new RunnableAssert("synchronize on lock1 and lock2") {
+                    @Override
+                    public void run() throws Exception {
+                        synchronized (lock1) {
+                            latch2.countDown();
+                            latch1.await();
+                            synchronized (lock2) {
+                                fail("Reached unreachable statement.");
+                            }
+                        }
+                    }
+                },
+                new RunnableAssert("synchronize on lock2 and lock1") {
+                    @Override
+                    public void run() throws Exception {
+                        synchronized (lock2) {
+                            latch1.countDown();
+                            latch2.await();
+                            synchronized (lock1) {
+                                fail("Reached unreachable statement.");
+                            }
+                        }
+                    }
+                }
+            ).run();
+            fail("RuntimeException expected");
+        } catch (RuntimeException expected) {
+            assertThat(expected.getMessage(), allOf(
+                containsString("Detected 2 deadlocked threads:\n"),
+                containsString("MultithreadingTesterTest.java:80"),
+                containsString("MultithreadingTesterTest.java:92")
+            ));
+        }
     }
 
     private class CountingRunnableAssert extends RunnableAssert {
