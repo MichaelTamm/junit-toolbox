@@ -3,11 +3,15 @@ package com.googlecode.junittoolbox;
 import com.googlecode.junittoolbox.util.MultiException;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import static org.mockito.internal.util.Checks.checkItemsNotNull;
+import static org.mockito.internal.util.Checks.checkNotNull;
 
 /**
  * Runs one ore more {@link RunnableAssert}s
@@ -65,8 +69,12 @@ public class MultithreadingTester {
      * Adds the given {@link RunnableAssert}s to this <code>MultithreadingTester</code>,
      * returns <code>this</code> to allow method chaining.
      */
-    public MultithreadingTester add(RunnableAssert... runnableAsserts) {
-        return add(Arrays.asList(runnableAsserts));
+    public MultithreadingTester add(@Nonnull RunnableAssert runnableAssert, RunnableAssert... moreRunnableAsserts) {
+        this.runnableAsserts.add(checkNotNull(runnableAssert, "runnableAssert"));
+        for (int i = 0; i < moreRunnableAsserts.length; ++i) {
+            this.runnableAsserts.add(checkNotNull(moreRunnableAsserts[i], "moreRunnableAsserts[" + i  + "]"));
+        }
+        return this;
     }
 
     /**
@@ -84,18 +92,21 @@ public class MultithreadingTester {
      * and adds them to this <code>MultithreadingTester</code>,
      * returns <code>this</code> to allow method chaining.
      */
-    public MultithreadingTester add(Runnable... runnables) {
-        List<Runnable> list = Arrays.asList(runnables);
-        checkItemsNotNull(list, "runnables");
-        for (final Runnable runnable : list) {
-            runnableAsserts.add(new RunnableAssert(runnable.toString()) {
-                @Override
-                public void run() {
-                    runnable.run();
-                }
-            });
+    public MultithreadingTester add(@Nonnull Runnable runnable, Runnable... moreRunnables) {
+        this.runnableAsserts.add(convertToRunnableAssert(checkNotNull(runnable, "runnable")));
+        for (int i = 0; i < moreRunnables.length; ++i) {
+            this.runnableAsserts.add(convertToRunnableAssert(checkNotNull(moreRunnables[i], "moreRunnables[" + i  + "]")));
         }
         return this;
+    }
+
+    private static RunnableAssert convertToRunnableAssert(final @Nonnull Runnable runnable) {
+        return new RunnableAssert(runnable.toString()) {
+            @Override
+            public void run() {
+                runnable.run();
+            }
+        };
     }
 
     /**
@@ -103,20 +114,22 @@ public class MultithreadingTester {
      * and adds them to this <code>MultithreadingTester</code>,
      * returns <code>this</code> to allow method chaining.
      */
-    public MultithreadingTester add(Callable<?>... callables) {
-        List<Callable<?>> list = Arrays.asList(callables);
-        checkItemsNotNull(list, "callables");
-        for (final Callable<?> callable : list) {
-            runnableAsserts.add(new RunnableAssert(callable.toString()) {
-                @Override
-                public void run() throws Exception {
-                    callable.call();
-                }
-            });
+    public MultithreadingTester add(@Nonnull Callable<?> callable, Callable<?>... moreCallables) {
+        this.runnableAsserts.add(convertToRunnableAssert(checkNotNull(callable, "callable")));
+        for (int i = 0; i < moreCallables.length; ++i) {
+            this.runnableAsserts.add(convertToRunnableAssert(checkNotNull(moreCallables[i], "moreCallables[" + i  + "]")));
         }
         return this;
     }
 
+    private static RunnableAssert convertToRunnableAssert(final @Nonnull Callable<?> callable) {
+        return new RunnableAssert(callable.toString()) {
+            @Override
+            public void run() throws Exception {
+                callable.call();
+            }
+        };
+    }
     /**
      * Starts multiple threads, which execute the added {@link RunnableAssert}s
      * several times. This method blocks until all started threads are finished.
