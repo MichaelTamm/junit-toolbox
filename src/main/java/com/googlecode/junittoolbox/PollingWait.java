@@ -64,8 +64,8 @@ public class PollingWait {
      * {@link #pollEvery interval} to free the CPU for other threads/processes.
      */
     public void until(@Nonnull RunnableAssert runnableAssert) {
-        long startTime = System.nanoTime();
-        long timeoutReached = startTime + timeoutMillis * 1000000;
+        long startTime = System.currentTimeMillis();
+        long timeoutReached = startTime + timeoutMillis;
         boolean success = false;
         do {
             try {
@@ -83,11 +83,11 @@ public class PollingWait {
                 if (errors.size() < 2) {
                     errors.add(t);
                 }
-                long sleepTime = pollIntervalMillis - (System.nanoTime() - startTime) / 1000000;
+                long sleepTime = pollIntervalMillis - (System.currentTimeMillis() - startTime);
                 if (sleepTime > 0) {
-                    sleep(pollIntervalMillis);
+                    sleep(sleepTime);
                 }
-                startTime = System.nanoTime();
+                startTime = System.currentTimeMillis();
             }
         } while (!success);
     }
