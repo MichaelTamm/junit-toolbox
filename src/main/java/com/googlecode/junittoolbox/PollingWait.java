@@ -31,7 +31,6 @@ public class PollingWait {
 
     private long timeoutMillis = 30000;
     private long pollIntervalMillis = 50;
-    private final List<Throwable> errors = new ArrayList<Throwable>();
 
     /**
      * Default: 30 seconds.
@@ -64,6 +63,7 @@ public class PollingWait {
      * {@link #pollEvery interval} to free the CPU for other threads/processes.
      */
     public void until(@Nonnull RunnableAssert runnableAssert) {
+        List<Throwable> errors = new ArrayList<Throwable>();
         long startTime = System.currentTimeMillis();
         long timeoutReached = startTime + timeoutMillis;
         boolean success = false;
@@ -77,7 +77,7 @@ public class PollingWait {
                     sb.append(runnableAssert);
                     sb.append(" did not succeed within ");
                     appendNiceDuration(sb, timeoutMillis);
-                    appendErrors(sb, t);
+                    appendErrors(sb, errors, t);
                     throw new AssertionError(sb.toString());
                 }
                 if (errors.size() < 2) {
@@ -106,7 +106,7 @@ public class PollingWait {
 
     private static final String EXCEPTION_SEPARATOR = "\n\t______________________________________________________________________\n";
 
-    private void appendErrors(StringBuilder sb, Throwable lastError) {
+    private void appendErrors(StringBuilder sb, List<Throwable> errors, Throwable lastError) {
         sb.append(EXCEPTION_SEPARATOR);
         sb.append("\t1st error: ");
         StringWriter sw = new StringWriter();
