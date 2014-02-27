@@ -5,6 +5,7 @@ import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.junit.experimental.categories.Categories;
+import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
@@ -34,12 +35,21 @@ import static org.junit.experimental.categories.Categories.*;
  *     public class AllButGuiTests {}
  * </pre>
  * Because it is also a replacement for the {@link Categories} runner,
- * you can use the {@link IncludeCategory @IncludeCategory} and
- * {@link ExcludeCategory @ExcludeCategory} annotations too:<pre>
+ * you can use the standard JUnit annotations {@link IncludeCategory @IncludeCategory}
+ * and/or {@link ExcludeCategory @ExcludeCategory}:<pre>
  *     &#64;RunWith(WildcardPatternSuite.class)
  *     &#64;SuiteClasses("&#42;&#42;/&#42;Test.class")
  *     &#64;IncludeCategory(SlowTests.class)
  *     public class OnlySlowTests {}
+ * </pre>
+ * If you want to specify more than one category to include/exclude,
+ * you can also use {@link IncludeCategories @IncludeCategories} and/or
+ * {@link ExcludeCategories @ExcludeCategories} annotations provided
+ * by JUnit Toolbox:<pre>
+ *     &#64;RunWith(WildcardPatternSuite.class)
+ *     &#64;SuiteClasses("&#42;&#42;/&#42;Test.class")
+ *     &#64;ExcludeCategories({SlowTests.class, FlakyTests.class})
+ *     public class NormalTests {}
  * </pre>
  */
 public class WildcardPatternSuite extends Suite {
@@ -178,13 +188,10 @@ public class WildcardPatternSuite extends Suite {
 
     public WildcardPatternSuite(Class<?> klass, RunnerBuilder builder) throws InitializationError {
         super(builder, klass, getSuiteClasses(klass));
-        IncludeCategory includeCategoryAnnotation= klass.getAnnotation(IncludeCategory.class);
-        Class<?> includedCategory = (includeCategoryAnnotation == null ? null : includeCategoryAnnotation.value());
-        ExcludeCategory excludeCategoryAnnotation= klass.getAnnotation(ExcludeCategory.class);
-        Class<?> excludedCategory = (excludeCategoryAnnotation == null ? null : excludeCategoryAnnotation.value());
-        if (includedCategory != null || excludedCategory != null) {
+        Filter filter = CategoriesFilter.forTestSuite(klass);
+        if (filter != null) {
             try {
-                filter(new CategoryFilter(includedCategory, excludedCategory));
+                filter(filter);
             } catch (NoTestsRemainException e) {
                 throw new InitializationError(e);
             }

@@ -54,4 +54,16 @@ public class WildcardPatternSuiteTest {
         assertThat(children2.size(), is(1));
         assertThat(children2, hasItemWithTestMethod("slowTest"));
     }
+
+    @Test
+    public void test_NormalLoginTests_sample() throws Exception {
+        Runner runner = ClassRequest.aClass(NormalLoginTests.class).getRunner();
+        List<?> children1 = getChildren(runner);
+        assertThat(children1.size(), is(1));
+        assertThat(children1, hasItemWithTestClass(LoginFrontendTest.class));
+        final Runner loginFrontendTestRunner = (Runner) children1.get(0);
+        List<?> children2 = getChildren(loginFrontendTestRunner);
+        assertThat(children2.size(), is(1));
+        assertThat(children2, hasItemWithTestMethod("fastTest"));
+    }
 }
