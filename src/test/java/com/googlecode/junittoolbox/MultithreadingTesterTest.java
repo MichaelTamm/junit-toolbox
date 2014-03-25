@@ -2,6 +2,7 @@ package com.googlecode.junittoolbox;
 
 import org.junit.Test;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,7 +11,7 @@ import static org.junit.Assert.*;
 
 public class MultithreadingTesterTest {
 
-    @Test
+    @Test(timeout = 5000)
     public void test() {
         RunnableAssert ra = new RunnableAssert("foo") {
             @Override
@@ -26,7 +27,18 @@ public class MultithreadingTesterTest {
         assertFalse(success);
     }
 
-    @Test
+    @Test(timeout = 5000)
+    public void test_with_long_running_worker() {
+        new MultithreadingTester().numThreads(2).numRoundsPerThread(1).add(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                Thread.sleep(1000);
+                return null;
+            }
+        }).run();
+    }
+
+    @Test(timeout = 5000)
     public void test_with_one_RunnableAssert() {
         CountingRunnableAssert ra1 = new CountingRunnableAssert();
         new MultithreadingTester().numThreads(11)
@@ -36,7 +48,7 @@ public class MultithreadingTesterTest {
         assertThat(ra1.count.get(), is(11 * 13));
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void test_with_two_RunnableAsserts() {
         CountingRunnableAssert ra1 = new CountingRunnableAssert();
         CountingRunnableAssert ra2 = new CountingRunnableAssert();
@@ -49,7 +61,7 @@ public class MultithreadingTesterTest {
         assertThat(ra2.count.get(), is(1));
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void test_with_more_RunnableAsserts_than_threads() {
         RunnableAssert ra = new CountingRunnableAssert();
         MultithreadingTester mt = new MultithreadingTester().numThreads(2)
@@ -62,7 +74,7 @@ public class MultithreadingTesterTest {
         } catch (IllegalStateException expected) {}
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void test_that_deadlock_is_detected() {
         try {
             final Object lock1 = new Object();
@@ -99,8 +111,8 @@ public class MultithreadingTesterTest {
         } catch (RuntimeException expected) {
             assertThat(expected.getMessage(), allOf(
                 containsString("Detected 2 deadlocked threads:\n"),
-                containsString("MultithreadingTesterTest.java:80"),
-                containsString("MultithreadingTesterTest.java:92")
+                containsString("MultithreadingTesterTest.java:92"),
+                containsString("MultithreadingTesterTest.java:104")
             ));
         }
     }

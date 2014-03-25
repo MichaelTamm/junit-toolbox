@@ -228,8 +228,9 @@ public class MultithreadingTester {
     }
 
     private void joinWorkerThreads() {
-        boolean foundAliveWorkerThread = false;
+        boolean foundAliveWorkerThread;
         do {
+            foundAliveWorkerThread = false;
             for (int i = 0; i < numThreads; ++i) {
                 try {
                     Thread workerThread = workerThreads[i];
