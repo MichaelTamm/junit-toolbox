@@ -11,7 +11,7 @@
 
     <groupId>com.googlecode.junit-toolbox</groupId>
     <artifactId>junit-toolbox</artifactId>
-    <version>1.8</version>
+    <version>1.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>JUnit Toolbox</name>
