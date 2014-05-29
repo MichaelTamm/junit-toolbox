@@ -55,22 +55,22 @@ import static org.junit.experimental.categories.Categories.*;
 public class WildcardPatternSuite extends Suite {
 
     private static Class<?>[] getSuiteClasses(Class<?> klass) throws InitializationError {
-        final org.junit.runners.Suite.SuiteClasses annotation1 = klass.getAnnotation(org.junit.runners.Suite.SuiteClasses.class);
-        final com.googlecode.junittoolbox.SuiteClasses annotation2 = klass.getAnnotation(com.googlecode.junittoolbox.SuiteClasses.class);
+        org.junit.runners.Suite.SuiteClasses annotation1 = klass.getAnnotation(org.junit.runners.Suite.SuiteClasses.class);
+        com.googlecode.junittoolbox.SuiteClasses annotation2 = klass.getAnnotation(com.googlecode.junittoolbox.SuiteClasses.class);
         if (annotation1 == null && annotation2 == null) {
             throw new InitializationError("class " + klass.getName() + " must have a SuiteClasses annotation");
         }
-        final Class<?>[] suiteClasses1 = (annotation1 == null ? null : annotation1.value());
-        final Class<?>[] suiteClasses2 = (annotation2 == null ? null : findSuiteClasses(klass, annotation2.value()));
+        Class<?>[] suiteClasses1 = (annotation1 == null ? null : annotation1.value());
+        Class<?>[] suiteClasses2 = (annotation2 == null ? null : findSuiteClasses(klass, annotation2.value()));
         return union(suiteClasses1, suiteClasses2);
     }
 
     private static Class<?>[] findSuiteClasses(Class<?> klass, String... wildcardPatterns) throws InitializationError {
-        final File baseDir = getBaseDir(klass);
+        File baseDir = getBaseDir(klass);
         try {
-            final String basePath = baseDir.getCanonicalPath().replace('\\', '/');
-            final List<Pattern> includePatterns = new ArrayList<Pattern>();
-            final List<Pattern> excludePatterns = new ArrayList<Pattern>();
+            String basePath = baseDir.getCanonicalPath().replace('\\', '/');
+            List<Pattern> includePatterns = new ArrayList<>();
+            List<Pattern> excludePatterns = new ArrayList<>();
             for (String wildcardPattern : wildcardPatterns) {
                 if (wildcardPattern == null) {
                     throw new InitializationError("wildcard pattern for the SuiteClasses annotation must not be null");
@@ -88,7 +88,7 @@ public class WildcardPatternSuite extends Suite {
                 Pattern regex = convertWildcardPatternToRegex("/" + wildcardPattern);
                 (exclude ? excludePatterns : includePatterns).add(regex);
             }
-            final IOFileFilter fileFilter = new AbstractFileFilter() {
+            IOFileFilter fileFilter = new AbstractFileFilter() {
                 @Override
                 public boolean accept(File file) {
                     try {
@@ -96,9 +96,9 @@ public class WildcardPatternSuite extends Suite {
                         if (file.isDirectory() || file.isHidden() || file.getName().contains("$")) {
                             return false;
                         }
-                        final String canonicalPath = file.getCanonicalPath().replace('\\', '/');
+                        String canonicalPath = file.getCanonicalPath().replace('\\', '/');
                         if (canonicalPath.startsWith(basePath)) {
-                            final String path = canonicalPath.substring(basePath.length());
+                            String path = canonicalPath.substring(basePath.length());
                             for (Pattern excludePattern : excludePatterns) {
                                 if (excludePattern.matcher(path).matches()) {
                                     return false;
@@ -118,19 +118,19 @@ public class WildcardPatternSuite extends Suite {
                     }
                 }
             };
-            final Collection<File> classFiles = FileUtils.listFiles(baseDir, fileFilter, TrueFileFilter.INSTANCE);
+            Collection<File> classFiles = FileUtils.listFiles(baseDir, fileFilter, TrueFileFilter.INSTANCE);
             if (classFiles.isEmpty()) {
                 throw new InitializationError("did not find any *.class file using the specified wildcard patterns " + Arrays.toString(wildcardPatterns) + " in directory " + basePath);
             }
-            final String classNamePrefix = (klass.getPackage() == null ? "" : klass.getPackage().getName() + ".");
-            final Class<?>[] result = new Class<?>[classFiles.size()];
+            String classNamePrefix = (klass.getPackage() == null ? "" : klass.getPackage().getName() + ".");
+            Class<?>[] result = new Class<?>[classFiles.size()];
             int i = 0;
-            final ClassLoader classLoader = klass.getClassLoader();
+            ClassLoader classLoader = klass.getClassLoader();
             for (File file : classFiles) {
-                final String canonicalPath = file.getCanonicalPath().replace('\\', '/');
+                String canonicalPath = file.getCanonicalPath().replace('\\', '/');
                 assert canonicalPath.startsWith(basePath) && canonicalPath.endsWith(".class");
-                final String path = canonicalPath.substring(basePath.length() + 1);
-                final String className = classNamePrefix + path.substring(0, path.length() - ".class".length()).replace('/', '.');
+                String path = canonicalPath.substring(basePath.length() + 1);
+                String className = classNamePrefix + path.substring(0, path.length() - ".class".length()).replace('/', '.');
                 result[i++] = classLoader.loadClass(className);
             }
             return result;
@@ -140,7 +140,7 @@ public class WildcardPatternSuite extends Suite {
     }
 
     private static File getBaseDir(Class<?> klass) throws InitializationError {
-        final URL klassUrl = klass.getResource(klass.getSimpleName() + ".class");
+        URL klassUrl = klass.getResource(klass.getSimpleName() + ".class");
         try {
             return new File(klassUrl.toURI()).getParentFile();
         } catch (URISyntaxException e) {
@@ -177,10 +177,10 @@ public class WildcardPatternSuite extends Suite {
         } else if (suiteClasses2 == null) {
             return suiteClasses1;
         } else {
-            final HashSet<Class<?>> temp = new HashSet<Class<?>>();
+            HashSet<Class<?>> temp = new HashSet<>();
             temp.addAll(Arrays.asList(suiteClasses1));
             temp.addAll(Arrays.asList(suiteClasses2));
-            final Class<?>[] result = new Class<?>[temp.size()];
+            Class<?>[] result = new Class<?>[temp.size()];
             temp.toArray(result);
             return result;
         }

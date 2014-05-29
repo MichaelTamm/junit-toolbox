@@ -1,15 +1,15 @@
 package com.googlecode.junittoolbox;
 
 import com.googlecode.junittoolbox.util.MultiException;
-import jsr166y.ForkJoinPool;
-import jsr166y.ForkJoinTask;
-import jsr166y.ForkJoinWorkerThread;
 import org.junit.runners.model.RunnerScheduler;
 
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.ForkJoinWorkerThread;
 
-import static jsr166y.ForkJoinTask.inForkJoinPool;
+import static java.util.concurrent.ForkJoinTask.inForkJoinPool;
 
 /**
  * Encapsulates the singleton {@link ForkJoinPool} used
@@ -23,16 +23,16 @@ class ParallelScheduler implements RunnerScheduler {
     private static ForkJoinPool setUpForkJoinPool() {
         int numThreads;
         try {
-            final String configuredNumThreads = System.getProperty("maxParallelTestThreads");
+            String configuredNumThreads = System.getProperty("maxParallelTestThreads");
             numThreads = Math.max(2, Integer.parseInt(configuredNumThreads));
         } catch (Exception ignored) {
             Runtime runtime = Runtime.getRuntime();
             numThreads = Math.max(2, runtime.availableProcessors());
         }
-        final ForkJoinPool.ForkJoinWorkerThreadFactory threadFactory = new ForkJoinPool.ForkJoinWorkerThreadFactory() {
+        ForkJoinPool.ForkJoinWorkerThreadFactory threadFactory = new ForkJoinPool.ForkJoinWorkerThreadFactory() {
             @Override
             public ForkJoinWorkerThread newThread(ForkJoinPool pool) {
-                final ForkJoinWorkerThread thread = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+                ForkJoinWorkerThread thread = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
                 thread.setName("JUnit-" + thread.getName());
                 return thread;
             }
@@ -40,7 +40,7 @@ class ParallelScheduler implements RunnerScheduler {
         return new ForkJoinPool(numThreads, threadFactory, null, false);
     }
 
-    private final Deque<ForkJoinTask<?>> _asyncTasks = new LinkedList<ForkJoinTask<?>>();
+    private final Deque<ForkJoinTask<?>> _asyncTasks = new LinkedList<>();
     private Runnable _lastScheduledChild;
 
     @Override
@@ -63,7 +63,7 @@ class ParallelScheduler implements RunnerScheduler {
 
     @Override
     public void finished() {
-        final MultiException me = new MultiException();
+        MultiException me = new MultiException();
         if (_lastScheduledChild != null) {
             if (inForkJoinPool()) {
                 // Execute the last scheduled child in the current thread ...

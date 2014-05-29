@@ -40,9 +40,9 @@ import java.util.List;
  */
 public class InnerTestClassesSuite extends Suite {
 
-    private static List<Runner> getRunnersForInnerTestClasses(Class<?> klass, RunnerBuilder runnerBuilder) throws InitializationError {
+    private static List<Runner> getRunnersForInnerTestClasses(Class<?> klass, RunnerBuilder runnerBuilder) {
         Class<?>[] innerClasses = klass.getClasses();
-        final List<Runner> runners = new ArrayList<Runner>();
+        List<Runner> runners = new ArrayList<Runner>();
         for (Class<?> innerClass : innerClasses) {
             try {
                 Runner runner = runnerBuilder.runnerForClass(innerClass);

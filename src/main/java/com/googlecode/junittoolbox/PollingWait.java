@@ -5,7 +5,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Helper class to wait for asynchronous operations.
@@ -63,7 +66,7 @@ public class PollingWait {
      * {@link #pollEvery interval} to free the CPU for other threads/processes.
      */
     public void until(@Nonnull RunnableAssert runnableAssert) {
-        List<Throwable> errors = new ArrayList<Throwable>();
+        List<Throwable> errors = new ArrayList<>();
         long startTime = System.currentTimeMillis();
         long timeoutReached = startTime + timeoutMillis;
         boolean success = false;
@@ -73,7 +76,7 @@ public class PollingWait {
                 success = true;
             } catch (Throwable t) {
                 if (errors.size() > 0 && startTime > timeoutReached) {
-                    final StringBuilder sb = new StringBuilder();
+                    StringBuilder sb = new StringBuilder();
                     sb.append(runnableAssert);
                     sb.append(" did not succeed within ");
                     appendNiceDuration(sb, timeoutMillis);
@@ -90,6 +93,23 @@ public class PollingWait {
                 startTime = System.currentTimeMillis();
             }
         } while (!success);
+    }
+
+    /**
+     * Repetitively executes the given <code>Callable&lt;Boolean></code>
+     * until it returns <code>true</code> or until the configured
+     * {@link #timeoutAfter timeout} is reached, in which case an
+     * {@link AssertionError} will be thrown. Calls {@link Thread#sleep}
+     * before each retry using the configured {@link #pollEvery interval}
+     * to free the CPU for other threads/processes.
+     */
+    public void until(@Nonnull Callable<Boolean> shouldBeTrue) {
+        until(new RunnableAssert(shouldBeTrue.toString()) {
+            @Override
+            public void run() throws Exception {
+                assertTrue(shouldBeTrue.call());
+            }
+        });
     }
 
     private void appendNiceDuration(StringBuilder sb, long millis) {

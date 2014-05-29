@@ -1,7 +1,5 @@
 package com.googlecode.junittoolbox;
 
-import jsr166y.ForkJoinTask;
-import jsr166y.RecursiveAction;
 import org.junit.experimental.theories.PotentialAssignment;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.internal.Assignments;
@@ -12,7 +10,9 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 import java.util.Deque;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.RecursiveAction;
 
 import static com.googlecode.junittoolbox.util.TigerThrower.sneakyThrow;
 
@@ -41,18 +41,18 @@ import static com.googlecode.junittoolbox.util.TigerThrower.sneakyThrow;
  */
 public class ParallelRunner extends Theories {
 
-    public ParallelRunner(final Class<?> klass) throws InitializationError {
+    public ParallelRunner(Class<?> klass) throws InitializationError {
         super(klass);
         setScheduler(new ParallelScheduler());
     }
 
     @Override
-    public Statement methodBlock(final FrameworkMethod method) {
+    public Statement methodBlock(FrameworkMethod method) {
         return new ParallelTheoryAnchor(method, getTestClass());
     }
 
     public class ParallelTheoryAnchor extends TheoryAnchor {
-        private final Deque<ForkJoinTask<?>> _asyncRuns = new LinkedBlockingDeque<ForkJoinTask<?>>();
+        private final Deque<ForkJoinTask<?>> _asyncRuns = new LinkedBlockingDeque<>();
         private volatile boolean _wasRunWithAssignmentCalled;
 
         public ParallelTheoryAnchor(FrameworkMethod method, TestClass testClass) {
@@ -93,9 +93,9 @@ public class ParallelRunner extends Theories {
         }
 
         @Override
-        protected void runWithIncompleteAssignment(final Assignments incomplete) throws Throwable {
+        protected void runWithIncompleteAssignment(Assignments incomplete) throws Throwable {
             for (PotentialAssignment source : incomplete.potentialsForNextUnassigned()) {
-                final Assignments nextAssignment = incomplete.assignNext(source);
+                Assignments nextAssignment = incomplete.assignNext(source);
                 ForkJoinTask<?> asyncRun = new RecursiveAction() {
                     @Override
                     protected void compute() {

@@ -14,8 +14,8 @@ import java.util.List;
 class CategoriesFilter extends Filter {
 
     static CategoriesFilter forTestSuite(Class<?> testSuiteClass) {
-        List<Class<?>> includedCategories = new ArrayList<Class<?>>();
-        List<Class<?>> excludedCategories = new ArrayList<Class<?>>();
+        List<Class<?>> includedCategories = new ArrayList<>();
+        List<Class<?>> excludedCategories = new ArrayList<>();
         IncludeCategory includeCategoryAnnotation= testSuiteClass.getAnnotation(IncludeCategory.class);
         if (includeCategoryAnnotation != null) { includedCategories.add(includeCategoryAnnotation.value()); }
         IncludeCategories includeCategoriesAnnotation= testSuiteClass.getAnnotation(IncludeCategories.class);
@@ -27,8 +27,8 @@ class CategoriesFilter extends Filter {
         return (includedCategories.isEmpty() && excludedCategories.isEmpty() ? null : new CategoriesFilter(includedCategories, excludedCategories));
     }
 
-    private final List<Class<?>> includedCategories = new ArrayList<Class<?>>();
-    private final List<Class<?>> excludedCategories = new ArrayList<Class<?>>();
+    private final List<Class<?>> includedCategories = new ArrayList<>();
+    private final List<Class<?>> excludedCategories = new ArrayList<>();
 
     private CategoriesFilter(Collection<Class<?>> includedCategories, Collection<Class<?>> excludedCategories) {
         this.includedCategories.addAll(includedCategories);
@@ -99,7 +99,7 @@ class CategoriesFilter extends Filter {
     }
 
     private List<Class<?>> categories(Description description) {
-        ArrayList<Class<?>> categories = new ArrayList<Class<?>>();
+        ArrayList<Class<?>> categories = new ArrayList<>();
         categories.addAll(Arrays.asList(directCategories(description)));
         categories.addAll(Arrays.asList(directCategories(parentDescription(description))));
         return categories;

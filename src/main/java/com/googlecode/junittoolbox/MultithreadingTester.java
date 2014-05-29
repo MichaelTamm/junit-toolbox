@@ -38,7 +38,7 @@ public class MultithreadingTester {
 
     private int numThreads = 100;
     private int roundsPerThreads = 1000;
-    private List<RunnableAssert> runnableAsserts = new ArrayList<RunnableAssert>();
+    private final List<RunnableAssert> runnableAsserts = new ArrayList<>();
 
     /**
      * Sets the number of threads used by {@link #run},
@@ -101,7 +101,7 @@ public class MultithreadingTester {
         return this;
     }
 
-    private static RunnableAssert convertToRunnableAssert(final @Nonnull Runnable runnable) {
+    private static RunnableAssert convertToRunnableAssert(@Nonnull Runnable runnable) {
         return new RunnableAssert(runnable.toString()) {
             @Override
             public void run() {
@@ -123,7 +123,7 @@ public class MultithreadingTester {
         return this;
     }
 
-    private static RunnableAssert convertToRunnableAssert(final @Nonnull Callable<?> callable) {
+    private static RunnableAssert convertToRunnableAssert(@Nonnull Callable<?> callable) {
         return new RunnableAssert(callable.toString()) {
             @Override
             public void run() throws Exception {
@@ -134,7 +134,7 @@ public class MultithreadingTester {
 
     private Thread monitorThread;
     private Thread[] workerThreads;
-    private Set<Long> idsOfDeadlockedThreads = new CopyOnWriteArraySet<Long>();
+    private final Set<Long> idsOfDeadlockedThreads = new CopyOnWriteArraySet<>();
 
     /**
      * Starts multiple threads, which execute the added {@link RunnableAssert}s
@@ -153,7 +153,7 @@ public class MultithreadingTester {
         if (runnableAsserts.isEmpty()) {
             throw new IllegalStateException("You must add at least 1 RunnableAssert before you can call run()");
         }
-        final MultiException me = new MultiException();
+        MultiException me = new MultiException();
         startMonitorThread(me);
         try {
             startWorkerThreads(me);
@@ -164,9 +164,9 @@ public class MultithreadingTester {
         me.throwIfNotEmpty();
     }
 
-    private void startMonitorThread(final MultiException me) {
-        final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        final Set<Long> knownDeadlockedThreadIds = asSet(threadMXBean.findDeadlockedThreads());
+    private void startMonitorThread(MultiException me) {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        Set<Long> knownDeadlockedThreadIds = asSet(threadMXBean.findDeadlockedThreads());
         monitorThread = new Thread("MultithreadingTester-monitor") {
             @Override
             public void run() {
@@ -199,15 +199,15 @@ public class MultithreadingTester {
         monitorThread.start();
     }
 
-    private void startWorkerThreads(final MultiException me) {
+    private void startWorkerThreads(MultiException me) {
         workerThreads = new Thread[numThreads];
         Iterator<RunnableAssert> i = runnableAsserts.iterator();
-        final CountDownLatch latch = new CountDownLatch(numThreads);
+        CountDownLatch latch = new CountDownLatch(numThreads);
         for (int j = 0; j < numThreads; ++j) {
             if (!i.hasNext()) {
                 i = runnableAsserts.iterator();
             }
-            final RunnableAssert runnableAssert = i.next();
+            RunnableAssert runnableAssert = i.next();
             Thread workerThread = new Thread("MultithreadingTester-worker-" + (j + 1)) {
                 @Override
                 public void run() {
@@ -260,7 +260,7 @@ public class MultithreadingTester {
     }
 
     private Set<Long> asSet(long[] array) {
-        Set<Long> set = new HashSet<Long>();
+        Set<Long> set = new HashSet<>();
         if (array != null) {
             for (long x : array) {
                 set.add(x);
