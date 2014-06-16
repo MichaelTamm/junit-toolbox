@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
  *     public void test_auto_complete() throws Exception {
  *         // Enter "cheese" into auto complete field ...
  *         ...
- *         wait.until(new {@link RunnableAssert}("'cheesecake' is displayed in auto-complete &lt;div>") {
+ *         wait.{@link #until(RunnableAssert) until}(new {@link RunnableAssert}("'cheesecake' is displayed in auto-complete &lt;div&gt;") {
  *             &#64;Override
  *             public void run() throws Exception {
  *                 WebElement autoCompleteDiv = driver.findElement(By.id("auto-complete"));
@@ -27,6 +27,26 @@ import static org.junit.Assert.assertTrue;
  *                 assertThat(autoCompleteDiv, containsText("cheesecake"));
  *             }
  *         });
+ *     }
+ * </pre>
+ * Since version 2.0 you can also use a lambda expression or a method reference instead of
+ * a {@link RunnableAssert} like this:
+ * <pre>
+ *     private PollingWait wait = new PollingWait().timeoutAfter(5, SECONDS)
+ *                                                 .pollEvery(100, MILLISECONDS);
+ *
+ *     &#64;Test
+ *     public void test_login() throws Exception {
+ *         // Enter credentials into login form ...
+ *         clickOnButton("Login");
+ *         wait.{@link #until(java.util.concurrent.Callable) until}(() -&gt; webDriver.findElement(By.linkText("Logout")).isDisplayed());
+ *         ...
+ *     }
+ *
+ *     protected void clickOnButton(String label) {
+ *         WebElement button = findButton(label);
+ *         wait.{@link #until(java.util.concurrent.Callable) until}(button::isDisplayed);
+ *         button.click();
  *     }
  * </pre>
  */
@@ -96,12 +116,14 @@ public class PollingWait {
     }
 
     /**
-     * Repetitively executes the given <code>Callable&lt;Boolean></code>
+     * Repetitively executes the given <code>Callable&lt;Boolean&gt;</code>
      * until it returns <code>true</code> or until the configured
      * {@link #timeoutAfter timeout} is reached, in which case an
      * {@link AssertionError} will be thrown. Calls {@link Thread#sleep}
      * before each retry using the configured {@link #pollEvery interval}
      * to free the CPU for other threads/processes.
+     *
+     * @since 2.0
      */
     public void until(@Nonnull Callable<Boolean> shouldBeTrue) {
         until(new RunnableAssert(shouldBeTrue.toString()) {
