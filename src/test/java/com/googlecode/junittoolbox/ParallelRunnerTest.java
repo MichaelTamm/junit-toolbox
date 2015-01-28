@@ -55,13 +55,22 @@ public class ParallelRunnerTest {
 
     @RunWith(ParallelRunner.class)
     public static class Example_with_theory_method {
-        private static Thread[] threads = new Thread[2];
+        private static volatile CountDownLatch latch;
+        private static volatile Thread[] threads;
+
+        @BeforeClass
+        public static void init() {
+            latch = new CountDownLatch(2);
+            threads = new Thread[2];
+        }
 
         @DataPoints
         public static int[] TEST_DATA = { 0, 1 };
 
         @Theory
-        public void theory(int i) {
+        public void test(int i) throws Exception {
+            latch.countDown();
+            assertTrue(latch.await(3, TimeUnit.SECONDS));
             threads[i] = Thread.currentThread();
         }
     }
