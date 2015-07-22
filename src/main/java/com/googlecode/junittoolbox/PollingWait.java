@@ -125,7 +125,7 @@ public class PollingWait {
      *
      * @since 2.0
      */
-    public void until(@Nonnull Callable<Boolean> shouldBeTrue) {
+    public void until(@Nonnull final Callable<Boolean> shouldBeTrue) {
         until(new RunnableAssert(shouldBeTrue.toString()) {
             @Override
             public void run() throws Exception {

@@ -68,9 +68,9 @@ public class WildcardPatternSuite extends Suite {
     private static Class<?>[] findSuiteClasses(Class<?> klass, String... wildcardPatterns) throws InitializationError {
         File baseDir = getBaseDir(klass);
         try {
-            String basePath = baseDir.getCanonicalPath().replace('\\', '/');
-            List<Pattern> includePatterns = new ArrayList<>();
-            List<Pattern> excludePatterns = new ArrayList<>();
+            final String basePath = baseDir.getCanonicalPath().replace('\\', '/');
+            final List<Pattern> includePatterns = new ArrayList<>();
+            final List<Pattern> excludePatterns = new ArrayList<>();
             for (String wildcardPattern : wildcardPatterns) {
                 if (wildcardPattern == null) {
                     throw new InitializationError("wildcard pattern for the SuiteClasses annotation must not be null");
