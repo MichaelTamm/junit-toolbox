@@ -17,11 +17,11 @@ class CategoriesFilter extends Filter {
         List<Class<?>> includedCategories = new ArrayList<Class<?>>();
         List<Class<?>> excludedCategories = new ArrayList<Class<?>>();
         IncludeCategory includeCategoryAnnotation= testSuiteClass.getAnnotation(IncludeCategory.class);
-        if (includeCategoryAnnotation != null) { includedCategories.add(includeCategoryAnnotation.value()); }
+        if (includeCategoryAnnotation != null) { includedCategories.addAll(Arrays.asList(includeCategoryAnnotation.value())); }
         IncludeCategories includeCategoriesAnnotation= testSuiteClass.getAnnotation(IncludeCategories.class);
         if (includeCategoriesAnnotation != null) { includedCategories.addAll(Arrays.asList(includeCategoriesAnnotation.value())); }
         ExcludeCategory excludeCategoryAnnotation= testSuiteClass.getAnnotation(ExcludeCategory.class);
-        if (excludeCategoryAnnotation != null) { excludedCategories.add(excludeCategoryAnnotation.value()); }
+        if (excludeCategoryAnnotation != null) { excludedCategories.addAll(Arrays.asList(excludeCategoryAnnotation.value())); }
         ExcludeCategories excludeCategoriesAnnotation= testSuiteClass.getAnnotation(ExcludeCategories.class);
         if (excludeCategoriesAnnotation != null) { excludedCategories.addAll(Arrays.asList(excludeCategoriesAnnotation.value())); }
         return (includedCategories.isEmpty() && excludedCategories.isEmpty() ? null : new CategoriesFilter(includedCategories, excludedCategories));

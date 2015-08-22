@@ -51,7 +51,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>4.12</version>
             <exclusions>
                 <exclusion>
                     <!-- Exclude hamcrest-core here, because we have an explicit dependency to hamcrest-library -->

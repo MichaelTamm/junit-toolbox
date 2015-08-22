@@ -109,7 +109,7 @@ public class ParallelRunnerTest {
         assertEquals(1, result.getFailureCount());
         Throwable failure = result.getFailures().get(0).getException();
         assertEquals(ParameterizedAssertionError.class, failure.getClass());
-        assertEquals("theory(SOME_INTS[1], SOME_STRINGS[1])", failure.getMessage());
+        assertEquals("theory(\"2\" <from SOME_INTS[1]>, \"bar\" <from SOME_STRINGS[1]>)", failure.getMessage());
         Throwable failureCause = failure.getCause();
         assertEquals(AssertionError.class, failureCause.getClass());
         assertEquals("test", failureCause.getMessage());
@@ -139,7 +139,7 @@ public class ParallelRunnerTest {
         assertEquals(1, result.getFailureCount());
         Throwable failure = result.getFailures().get(0).getException();
         assertEquals(ParameterizedAssertionError.class, failure.getClass());
-        assertEquals("theory(SOME_INTS[1], SOME_STRINGS[1])", failure.getMessage());
+        assertEquals("theory(\"2\" <from SOME_INTS[1]>, \"bar\" <from SOME_STRINGS[1]>)", failure.getMessage());
         Throwable failureCause = failure.getCause();
         assertEquals(IOException.class, failureCause.getClass());
         assertEquals("test", failureCause.getMessage());
