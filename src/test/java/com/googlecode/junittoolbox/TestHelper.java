@@ -7,16 +7,16 @@ import org.junit.runners.ParentRunner;
 import org.junit.runners.model.FrameworkMethod;
 
 import java.lang.reflect.Method;
-import java.util.List;
+import java.util.Collection;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItem;
 
 public class TestHelper {
 
-    static List<?> getChildren(Runner runner) throws Exception {
+    static Collection<?> getChildren(Runner runner) throws Exception {
         Method getFilteredChildren = ParentRunner.class.getDeclaredMethod("getFilteredChildren");
         getFilteredChildren.setAccessible(true);
-        return (List<?>) getFilteredChildren.invoke(runner);
+        return (Collection<?>) getFilteredChildren.invoke(runner);
     }
 
     static Matcher<Iterable<?>> hasItemWithTestClass(Class<?> testClass) {
