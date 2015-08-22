@@ -1,5 +1,6 @@
 package com.googlecode.junittoolbox;
 
+import com.googlecode.junittoolbox.util.JUnit4TestChecker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
@@ -123,17 +124,20 @@ public class WildcardPatternSuite extends Suite {
                 throw new InitializationError("did not find any *.class file using the specified wildcard patterns " + Arrays.toString(wildcardPatterns) + " in directory " + basePath);
             }
             final String classNamePrefix = (klass.getPackage() == null ? "" : klass.getPackage().getName() + ".");
-            final Class<?>[] result = new Class<?>[classFiles.size()];
-            int i = 0;
+            final List<Class<?>> testClasses = new ArrayList<Class<?>>();
             final ClassLoader classLoader = klass.getClassLoader();
+            final JUnit4TestChecker jUnit4TestChecker = new JUnit4TestChecker(classLoader);
             for (File file : classFiles) {
                 final String canonicalPath = file.getCanonicalPath().replace('\\', '/');
                 assert canonicalPath.startsWith(basePath) && canonicalPath.endsWith(".class");
                 final String path = canonicalPath.substring(basePath.length() + 1);
                 final String className = classNamePrefix + path.substring(0, path.length() - ".class".length()).replace('/', '.');
-                result[i++] = classLoader.loadClass(className);
+                Class<?> clazz = classLoader.loadClass(className);
+                if (jUnit4TestChecker.accept(clazz)) {
+                    testClasses.add(clazz);
+                }
             }
-            return result;
+            return testClasses.toArray(new Class[testClasses.size()]);
         } catch (Exception e) {
             throw new InitializationError("failed to scan " + baseDir + " using wildcard patterns " + Arrays.toString(wildcardPatterns) + " -- " + e);
         }
