@@ -24,7 +24,7 @@ import static org.junit.experimental.categories.Categories.*;
 /**
  * A replacement for the JUnit runners {@link Suite} and {@link Categories},
  * which allows you to specify the children classes of your test suite class
- * using a <a href="http://ant.apache.org/manual/dirtasks.html#patterns">wildcard pattern</a>.
+ * using a <a href="http://ant.apache.org/manual/dirtasks.html#patterns" target="_blank">wildcard pattern</a>.
  * Example:<pre>
  *     &#64;RunWith(WildcardPatternSuite.class)
  *     &#64;SuiteClasses("&#42;&#42;/&#42;Test.class")
