@@ -6,14 +6,14 @@ import java.lang.annotation.*;
  * This annotation can be used with the {@link WildcardPatternSuite}
  * and the {@link ParallelSuite} runner. It allows you to specify
  * the children classes of a test suite class with a
- * <a href="http://ant.apache.org/manual/dirtasks.html#patterns">wildcard pattern</a>.
+ * <a href="http://ant.apache.org/manual/dirtasks.html#patterns" target="_blank">wildcard pattern</a>.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
 public @interface SuiteClasses {
     /**
-     * <a href="http://ant.apache.org/manual/dirtasks.html#patterns">Wildcard pattern(s)</a>
+     * <a href="http://ant.apache.org/manual/dirtasks.html#patterns" target="_blank">Wildcard pattern(s)</a>
      * relative to the directory containing the actual test suite class
      * annotated with <code>@RunWith(WildcardPatternSuite&#46;class)</code> or
      * <code>@RunWith(ParallelSuite&#46;class)</code>,

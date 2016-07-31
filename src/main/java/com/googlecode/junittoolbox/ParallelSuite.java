@@ -11,7 +11,7 @@ import org.junit.runners.model.RunnerBuilder;
  * will be the number of {@link Runtime#availableProcessors() available processors.}
  * You can either explicitly list the children classes using the
  * <code>{@link org.junit.runners.Suite.SuiteClasses @SuiteClasses}</code> annotation
- * provided by <a href="https://github.com/KentBeck/junit">JUnit</a> itself, like this:<pre>
+ * provided by <a href="http://junit.org/" target="_blank">JUnit</a> itself, like this:<pre>
  *     &#64;RunWith(ParallelSuite.class)
  *     &#64;SuiteClasses({
  *         LoginFrontendTest.class,
@@ -21,7 +21,7 @@ import org.junit.runners.model.RunnerBuilder;
  *     public class AllFrontendTests {}
  * </pre>
  * Or you can specify a wildcard pattern using the <code>{@link com.googlecode.junittoolbox.SuiteClasses @SuiteClasses}</code> annotation
- * provided by <a href="https://junit-toolbox.googlecode.com/">JUnit Toolbox</a>:<pre>
+ * provided by <a href="https://github.com/MichaelTamm/junit-toolbox" target="_blank">JUnit Toolbox</a>:<pre>
  *     &#64;RunWith(ParallelSuite.class)
  *     &#64;SuiteClasses("&#42;&#42;/&#42;FrontendTest.class")
  *     public class AllFrontendTests {}
