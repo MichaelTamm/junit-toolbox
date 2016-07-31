@@ -1,13 +1,13 @@
 # Overview #
 
 The JUnit Toolbox provides some useful classes for writing automated tests with JUnit:
-  * [MultithreadingTester](https://junit-toolbox.googlecode.com/git/javadoc/com/googlecode/junittoolbox/MultithreadingTester.html) -- Helper class for writing stress tests using multiple, concurrently running threads
-  * [PollingWait](https://junit-toolbox.googlecode.com/git/javadoc/com/googlecode/junittoolbox/PollingWait.html) -- Helper class to wait for asynchronous operations
-  * [ParallelRunner](https://junit-toolbox.googlecode.com/git/javadoc/com/googlecode/junittoolbox/ParallelRunner.html) -- Executes all `@Test` methods as well as the calls to `@Theory` methods  with different parameter assignments concurrently using several worker threads.
-  * [ParallelParameterized](https://junit-toolbox.googlecode.com/git/javadoc/com/googlecode/junittoolbox/ParallelParameterized.html) -- A replacement for the JUnit runner `Parameterized` which executes the tests for each parameter set concurrently.
-  * [WildcardPatternSuite](https://junit-toolbox.googlecode.com/git/javadoc/com/googlecode/junittoolbox/WildcardPatternSuite.html) -- A replacement for the JUnit runners `Suite` and `Categories`, which allows you to specify the children classes of your test suite class using a wildcard pattern. Furthermore you can include and/or exclude multiple categories.
-  * [ParallelSuite](https://junit-toolbox.googlecode.com/git/javadoc/com/googlecode/junittoolbox/ParallelSuite.html) -- An extension of the `WildcardPatternSuite`, which executes its children classes concurrently using several worker threads. Although it extends `WildcardPatternSuite` you are not forced to use a wildcard pattern, you can also list the children class using the `@SuiteClasses` annotation known from JUnit.
-  * [InnerTestClassesSuite](https://junit-toolbox.googlecode.com/git/javadoc/com/googlecode/junittoolbox/InnerTestClassesSuite.html) -- A replacement for the JUnit runner `Enclosed` which executes all inner test classes of the class annotated with ` @RunWith(InnerTestClassesSuite.class)`. In contrast to the `Enclosed` runner provided by JUnit it detects if an inner class is actually a test class and ignores all other inner classes.
+  * [MultithreadingTester](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/MultithreadingTester.html) -- Helper class for writing stress tests using multiple, concurrently running threads
+  * [PollingWait](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/PollingWait.html) -- Helper class to wait for asynchronous operations
+  * [ParallelRunner](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelRunner.html) -- Executes all `@Test` methods as well as the calls to `@Theory` methods  with different parameter assignments concurrently using several worker threads.
+  * [ParallelParameterized](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelParameterized.html) -- A replacement for the JUnit runner `Parameterized` which executes the tests for each parameter set concurrently.
+  * [WildcardPatternSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/WildcardPatternSuite.html) -- A replacement for the JUnit runners `Suite` and `Categories`, which allows you to specify the children classes of your test suite class using a wildcard pattern. Furthermore you can include and/or exclude multiple categories.
+  * [ParallelSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelSuite.html) -- An extension of the `WildcardPatternSuite`, which executes its children classes concurrently using several worker threads. Although it extends `WildcardPatternSuite` you are not forced to use a wildcard pattern, you can also list the children class using the `@SuiteClasses` annotation known from JUnit.
+  * [InnerTestClassesSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/InnerTestClassesSuite.html) -- A replacement for the JUnit runner `Enclosed` which executes all inner test classes of the class annotated with ` @RunWith(InnerTestClassesSuite.class)`. In contrast to the `Enclosed` runner provided by JUnit it detects if an inner class is actually a test class and ignores all other inner classes.
 
 `ParallelRunner`, `ParallelParameterized`, and `ParallelSuite` share a common Fork-Join-Pool. You can control the maximum number of worker threads by specifying the system property `maxParallelTestThreads`. If this system property is not set, there will be as many worker threads as the number of processors available to the JVM.
 
@@ -26,10 +26,10 @@ If you use [Maven](http://maven.apache.org), add the following dependency to you
 
 ## Version 2.2 (for Java 8) and Version 1.10 (for Java 6) ##
   * Updated to JUnit 4.12
-  * Improved [WildcardPatternSuite](https://junit-toolbox.googlecode.com/git/javadoc/com/googlecode/junittoolbox/WildcardPatternSuite.html): it now ignores classes, which match the specified wildcard pattern, but are not test classes (fixes issue #8)
+  * Improved [WildcardPatternSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/WildcardPatternSuite.html): it now ignores classes, which match the specified wildcard pattern, but are not test classes (fixes issue #8)
 
 ## Version 2.1 (for Java 8) and Version 1.9 (for Java 6) ##
-  * Added the [ParallelParameterized](https://junit-toolbox.googlecode.com/git/javadoc/com/googlecode/junittoolbox/ParallelParameterized.html) runner contributed by Stefan Birkner.
+  * Added the [ParallelParameterized](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelParameterized.html) runner contributed by Stefan Birkner.
 
 ## Version 2.0 ##
   * Upgraded to Java 8. Note: This does not mean, that there won't be any new version for Java 6. If a new feature or bug fix (which is compatible to Java 6) is added to the code base, I will release a new 1.x version as well as a new 2.x version.
