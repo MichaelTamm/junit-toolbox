@@ -115,7 +115,7 @@ public class ParallelRunner extends Theories {
          */
         @Override
         protected synchronized void handleAssumptionViolation(AssumptionViolatedException e) {
-            super.handleAssumptionViolation(e);
+            throw e;
         }
 
         /**
