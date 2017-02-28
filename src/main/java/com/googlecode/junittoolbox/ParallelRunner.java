@@ -2,8 +2,9 @@ package com.googlecode.junittoolbox;
 
 import jsr166y.ForkJoinTask;
 import jsr166y.RecursiveAction;
-import org.junit.experimental.theories.PotentialAssignment;
+import org.junit.experimental.thories.PotentialAssignment;
 import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
 import org.junit.experimental.theories.internal.Assignments;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
@@ -53,10 +54,12 @@ public class ParallelRunner extends Theories {
 
     public class ParallelTheoryAnchor extends TheoryAnchor {
         private final Deque<ForkJoinTask<?>> _asyncRuns = new LinkedBlockingDeque<ForkJoinTask<?>>();
+        private final FrameworkMethod _testMethod;
         private volatile boolean _wasRunWithAssignmentCalled;
 
         public ParallelTheoryAnchor(FrameworkMethod method, TestClass testClass) {
             super(method, testClass);
+            _testMethod = method;
         }
 
         @Override
@@ -115,7 +118,12 @@ public class ParallelRunner extends Theories {
          */
         @Override
         protected synchronized void handleAssumptionViolation(AssumptionViolatedException e) {
-            throw e;
+            if (_testMethod.getAnnotation(Theory.class) == null) {
+            // Behave like BlockJUnit4ClassRunner
+                throw e;
+            }
+            // Behave like Theories runner
+            super.handleAssumptionViolation(e);
         }
 
         /**
