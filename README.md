@@ -24,6 +24,9 @@ If you use [Maven](http://maven.apache.org), add the following dependency to you
 
 # Release Notes #
 
+## Version 2.3 (for Java 8) and Version 1.11 (for Java 6) ##
+  * Improved handling of `AssumptionViolatedException` in `ParallelRunner` contributed by Christian Grotheer (fixes [#12](https://github.com/MichaelTamm/junit-toolbox/issues/12)).
+
 ## Version 2.2 (for Java 8) and Version 1.10 (for Java 6) ##
   * Updated to JUnit 4.12
   * Improved [WildcardPatternSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/WildcardPatternSuite.html): it now ignores classes, which match the specified wildcard pattern, but are not test classes (fixes issue #8)
