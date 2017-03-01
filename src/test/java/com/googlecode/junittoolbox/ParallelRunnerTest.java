@@ -4,12 +4,14 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.experimental.theories.internal.ParameterizedAssertionError;
+import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -182,9 +184,40 @@ public class ParallelRunnerTest {
         assertEquals(1, result.getFailureCount());
     }
 
-    // TODO: @RunWith(ParallelRunner.class)
-    @RunWith(Theories.class)
+    private class AssumptionFailedListener extends RunListener {
+        private int _assumptionFailedCount = 0;
+        private int _testFailedCount = 0;
+        private int _runCount = 0;
+
+        @Override
+        public void testFinished(Description description) throws Exception {
+            _runCount++;
+        }
+
+        @Override
+        public void testFailure(Failure failure) throws Exception {
+            _testFailedCount++;
+        }
+
+        @Override
+        public void testAssumptionFailure(Failure failure) {
+            _assumptionFailedCount++;
+        }
+
+        public int getAssumptionFailureCount() {
+            return _assumptionFailedCount;
+        }
+        public int getFailureCount() {
+            return _testFailedCount;
+        }
+        public int getRunCount() {
+            return _runCount;
+        }
+    }
+
+    @RunWith(ParallelRunner.class)
     public static class Example_with_theory_method_and_assume {
+
         @DataPoints
         public static final String[] SOME_STRINGS = new String[] { "foo", null, "bar" };
 
@@ -193,7 +226,6 @@ public class ParallelRunnerTest {
             assumeThat(s, is(not(nullValue())));
             assertThat(s.length(), is(equalTo(3)));
         }
-
         @Theory
         public void wrong_theory(String s) throws Throwable {
             assumeThat(s, is(not(nullValue())));
@@ -202,10 +234,47 @@ public class ParallelRunnerTest {
     }
 
     @Test
-    @Ignore("Strange: Already fails when Example_with_theory_method_and_assume is annotated with @RunWith(Theories.class)")
     public void test_with_theory_method_and_assume() {
-        Result result = JUnitCore.runClasses(Example.class);
-        assertEquals(2, result.getRunCount());
-        assertEquals(1, result.getFailureCount());
+        JUnitCore core = new JUnitCore();
+        AssumptionFailedListener listener = new AssumptionFailedListener();
+        core.addListener(listener);
+        core.run(Example_with_theory_method_and_assume.class);
+
+        assertEquals(2, listener.getRunCount());
+        assertEquals(0, listener.getAssumptionFailureCount());
+        assertEquals(1, listener.getFailureCount());
+    }
+    @RunWith(ParallelRunner.class)
+    public static class Example_with_test_method_and_assume {
+
+        @Test
+        public void assume_passed_and_wrong_test() throws Throwable {
+            assumeThat(true, is(true));
+            assertThat(true, is(equalTo(false)));
+        }
+
+        @Test
+        public void assume_passed_and_correct_test() throws Throwable {
+            assumeThat(true, is(true));
+            assertThat(true, is(equalTo(true)));
+        }
+        @Test
+        public void assume_failed_test() throws Throwable {
+            assumeThat(false, is(true));
+            assertThat(true, is(equalTo(false)));
+        }
+
+    }
+
+    @Test
+    public void test_with_test_method_and_assume() {
+        JUnitCore core = new JUnitCore();
+        AssumptionFailedListener listener = new AssumptionFailedListener();
+        core.addListener(listener);
+        core.run(Example_with_test_method_and_assume.class);
+
+        assertEquals(3, listener.getRunCount());
+        assertEquals(1, listener.getAssumptionFailureCount());
+        assertEquals(1, listener.getFailureCount());
     }
 }

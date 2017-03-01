@@ -1,20 +1,21 @@
 package com.googlecode.junittoolbox;
 
-import org.junit.experimental.theories.PotentialAssignment;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.internal.Assignments;
-import org.junit.internal.AssumptionViolatedException;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
-import org.junit.runners.model.TestClass;
+import static com.googlecode.junittoolbox.util.TigerThrower.sneakyThrow;
 
 import java.util.Deque;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.RecursiveAction;
 
-import static com.googlecode.junittoolbox.util.TigerThrower.sneakyThrow;
+import org.junit.experimental.theories.PotentialAssignment;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.experimental.theories.internal.Assignments;
+import org.junit.internal.AssumptionViolatedException;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.Statement;
+import org.junit.runners.model.TestClass;
 
 /**
  * An extension of the JUnit {@link Theories} runner, which executes
@@ -53,10 +54,12 @@ public class ParallelRunner extends Theories {
 
     public class ParallelTheoryAnchor extends TheoryAnchor {
         private final Deque<ForkJoinTask<?>> _asyncRuns = new LinkedBlockingDeque<>();
+        private final FrameworkMethod _testMethod;
         private volatile boolean _wasRunWithAssignmentCalled;
 
         public ParallelTheoryAnchor(FrameworkMethod method, TestClass testClass) {
             super(method, testClass);
+            _testMethod = method;
         }
 
         @Override
@@ -115,6 +118,11 @@ public class ParallelRunner extends Theories {
          */
         @Override
         protected synchronized void handleAssumptionViolation(AssumptionViolatedException e) {
+            if (_testMethod.getAnnotation(Theory.class) == null) {
+            // Behave like BlockJUnit4ClassRunner
+                throw e;
+            }
+            // Behave like Theories runner
             super.handleAssumptionViolation(e);
         }
 
