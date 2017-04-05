@@ -101,7 +101,7 @@ public class MultithreadingTester {
         return this;
     }
 
-    private static RunnableAssert convertToRunnableAssert(@Nonnull Runnable runnable) {
+    private static RunnableAssert convertToRunnableAssert(@Nonnull final Runnable runnable) {
         return new RunnableAssert(runnable.toString()) {
             @Override
             public void run() {
@@ -123,7 +123,7 @@ public class MultithreadingTester {
         return this;
     }
 
-    private static RunnableAssert convertToRunnableAssert(@Nonnull Callable<?> callable) {
+    private static RunnableAssert convertToRunnableAssert(@Nonnull final Callable<?> callable) {
         return new RunnableAssert(callable.toString()) {
             @Override
             public void run() throws Exception {
@@ -164,9 +164,9 @@ public class MultithreadingTester {
         me.throwIfNotEmpty();
     }
 
-    private void startMonitorThread(MultiException me) {
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        Set<Long> knownDeadlockedThreadIds = asSet(threadMXBean.findDeadlockedThreads());
+    private void startMonitorThread(final MultiException me) {
+        final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        final Set<Long> knownDeadlockedThreadIds = asSet(threadMXBean.findDeadlockedThreads());
         monitorThread = new Thread("MultithreadingTester-monitor") {
             @Override
             public void run() {
@@ -199,15 +199,15 @@ public class MultithreadingTester {
         monitorThread.start();
     }
 
-    private void startWorkerThreads(MultiException me) {
+    private void startWorkerThreads(final MultiException me) {
         workerThreads = new Thread[numThreads];
         Iterator<RunnableAssert> i = runnableAsserts.iterator();
-        CountDownLatch latch = new CountDownLatch(numThreads);
+        final CountDownLatch latch = new CountDownLatch(numThreads);
         for (int j = 0; j < numThreads; ++j) {
             if (!i.hasNext()) {
                 i = runnableAsserts.iterator();
             }
-            RunnableAssert runnableAssert = i.next();
+            final RunnableAssert runnableAssert = i.next();
             Thread workerThread = new Thread("MultithreadingTester-worker-" + (j + 1)) {
                 @Override
                 public void run() {

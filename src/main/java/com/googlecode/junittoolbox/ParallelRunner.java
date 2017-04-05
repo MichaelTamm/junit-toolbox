@@ -98,7 +98,7 @@ public class ParallelRunner extends Theories {
         @Override
         protected void runWithIncompleteAssignment(Assignments incomplete) throws Throwable {
             for (PotentialAssignment source : incomplete.potentialsForNextUnassigned()) {
-                Assignments nextAssignment = incomplete.assignNext(source);
+                final Assignments nextAssignment = incomplete.assignNext(source);
                 ForkJoinTask<?> asyncRun = new RecursiveAction() {
                     @Override
                     protected void compute() {
