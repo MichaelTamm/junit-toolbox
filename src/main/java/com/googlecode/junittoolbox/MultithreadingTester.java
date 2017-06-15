@@ -71,10 +71,9 @@ public class MultithreadingTester {
      * returns <code>this</code> to allow method chaining.
      */
     public MultithreadingTester add(@Nonnull RunnableAssert runnableAssert, RunnableAssert... moreRunnableAsserts) {
+        checkArrayItemsNotNull(moreRunnableAsserts, "moreRunnableAsserts");
         this.runnableAsserts.add(checkNotNull(runnableAssert, "runnableAssert"));
-        for (int i = 0; i < moreRunnableAsserts.length; ++i) {
-            this.runnableAsserts.add(checkNotNull(moreRunnableAsserts[i], "moreRunnableAsserts[" + i  + "]"));
-        }
+        Collections.addAll(this.runnableAsserts, moreRunnableAsserts);
         return this;
     }
 
@@ -94,9 +93,10 @@ public class MultithreadingTester {
      * returns <code>this</code> to allow method chaining.
      */
     public MultithreadingTester add(@Nonnull Runnable runnable, Runnable... moreRunnables) {
+        checkArrayItemsNotNull(moreRunnables, "moreRunnables");
         this.runnableAsserts.add(convertToRunnableAssert(checkNotNull(runnable, "runnable")));
-        for (int i = 0; i < moreRunnables.length; ++i) {
-            this.runnableAsserts.add(convertToRunnableAssert(checkNotNull(moreRunnables[i], "moreRunnables[" + i  + "]")));
+        for (Runnable aRunnable: moreRunnables) {
+            this.runnableAsserts.add(convertToRunnableAssert(aRunnable));
         }
         return this;
     }
@@ -116,9 +116,10 @@ public class MultithreadingTester {
      * returns <code>this</code> to allow method chaining.
      */
     public MultithreadingTester add(@Nonnull Callable<?> callable, Callable<?>... moreCallables) {
+        checkArrayItemsNotNull(moreCallables, "moreCallables");
         this.runnableAsserts.add(convertToRunnableAssert(checkNotNull(callable, "callable")));
-        for (int i = 0; i < moreCallables.length; ++i) {
-            this.runnableAsserts.add(convertToRunnableAssert(checkNotNull(moreCallables[i], "moreCallables[" + i  + "]")));
+        for (Callable<?> aCallable: moreCallables) {
+            this.runnableAsserts.add(convertToRunnableAssert(aCallable));
         }
         return this;
     }
@@ -130,6 +131,12 @@ public class MultithreadingTester {
                 callable.call();
             }
         };
+    }
+
+    private void checkArrayItemsNotNull(@Nonnull Object[] items, @Nonnull String label) {
+        for (int i = 0; i < items.length; ++i) {
+            checkNotNull(items[i], label + "[" + i  + "]");
+        }
     }
 
     private Thread monitorThread;
