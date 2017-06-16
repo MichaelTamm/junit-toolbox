@@ -18,7 +18,7 @@ If you use [Maven](http://maven.apache.org), add the following dependency to you
 <dependency>
     <groupId>com.googlecode.junit-toolbox</groupId>
     <artifactId>junit-toolbox</artifactId>
-    <version>2.2</version>
+    <version>2.3</version>
 </dependency>
 ```
 
