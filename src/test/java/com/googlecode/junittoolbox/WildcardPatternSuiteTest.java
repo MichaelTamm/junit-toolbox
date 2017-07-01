@@ -4,6 +4,7 @@ import com.googlecode.junittoolbox.samples.*;
 import com.googlecode.junittoolbox.samples.AllTests;
 import com.googlecode.junittoolbox.samples.frontend.FillOutFormFrontendTest;
 import com.googlecode.junittoolbox.samples.frontend.LoginFrontendTest;
+import com.googlecode.junittoolbox.samples.suites.AllFrontendTests;
 import org.junit.Test;
 import org.junit.internal.requests.ClassRequest;
 import org.junit.runner.Runner;
