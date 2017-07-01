@@ -68,79 +68,98 @@ public class WildcardPatternSuite extends Suite {
 
     private static Class<?>[] findSuiteClasses(Class<?> klass, String... wildcardPatterns) throws InitializationError {
         File baseDir = getBaseDir(klass);
+        Set<File> classFiles = findFiles(baseDir, wildcardPatterns);
+        if (classFiles.isEmpty()) {
+            throw new InitializationError("Did not find any *.class file using the specified wildcard patterns " + Arrays.toString(wildcardPatterns) + " relative to directory " + baseDir);
+        }
+        File testClassesDir = getClassesDir(klass);
+        String testClassesPath;
         try {
-            String basePath = baseDir.getCanonicalPath().replace('\\', '/');
-            List<Pattern> includePatterns = new ArrayList<>();
-            List<Pattern> excludePatterns = new ArrayList<>();
-            for (String wildcardPattern : wildcardPatterns) {
-                if (wildcardPattern == null) {
-                    throw new InitializationError("wildcard pattern for the SuiteClasses annotation must not be null");
-                }
-                boolean exclude = wildcardPattern.startsWith("!");
-                if (exclude) {
-                    wildcardPattern = wildcardPattern.substring(1);
-                }
-                if (wildcardPattern.startsWith("/")) {
-                    throw new InitializationError("wildcard pattern for the SuiteClasses annotation must not start with a '/' character");
-                }
-                if (!exclude && !wildcardPattern.endsWith(".class")) {
-                    throw new InitializationError("wildcard pattern for the SuiteClasses annotation must end with \".class\"");
-                }
-                Pattern regex = convertWildcardPatternToRegex("/" + wildcardPattern);
-                (exclude ? excludePatterns : includePatterns).add(regex);
-            }
-            IOFileFilter fileFilter = new AbstractFileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    try {
-                        // Never accept directories, hidden files, and inner classes ...
-                        if (file.isDirectory() || file.isHidden() || file.getName().contains("$")) {
-                            return false;
-                        }
-                        String canonicalPath = file.getCanonicalPath().replace('\\', '/');
-                        if (canonicalPath.startsWith(basePath)) {
-                            String path = canonicalPath.substring(basePath.length());
-                            for (Pattern excludePattern : excludePatterns) {
-                                if (excludePattern.matcher(path).matches()) {
-                                    return false;
-                                }
-                            }
-                            for (Pattern includePattern : includePatterns) {
-                                if (includePattern.matcher(path).matches()) {
-                                    return true;
-                                }
-                            }
-                            return false;
-                        } else {
-                            return false;
-                        }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e.getMessage());
-                    }
-                }
-            };
-            Collection<File> classFiles = FileUtils.listFiles(baseDir, fileFilter, TrueFileFilter.INSTANCE);
-            if (classFiles.isEmpty()) {
-                throw new InitializationError("did not find any *.class file using the specified wildcard patterns " + Arrays.toString(wildcardPatterns) + " in directory " + basePath);
-            }
-            String classNamePrefix = (klass.getPackage() == null ? "" : klass.getPackage().getName() + ".");
-            List<Class<?>> testClasses = new ArrayList<>();
-            ClassLoader classLoader = klass.getClassLoader();
-            JUnit4TestChecker jUnit4TestChecker = new JUnit4TestChecker(classLoader);
-            for (File file : classFiles) {
+            testClassesPath = testClassesDir.getCanonicalPath().replace('\\', '/');
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        List<Class<?>> testClasses = new ArrayList<>();
+        ClassLoader classLoader = klass.getClassLoader();
+        JUnit4TestChecker junit4TestChecker = new JUnit4TestChecker(classLoader);
+        for (File file : classFiles) {
+            try {
                 String canonicalPath = file.getCanonicalPath().replace('\\', '/');
-                assert canonicalPath.startsWith(basePath) && canonicalPath.endsWith(".class");
-                String path = canonicalPath.substring(basePath.length() + 1);
-                String className = classNamePrefix + path.substring(0, path.length() - ".class".length()).replace('/', '.');
+                if (!canonicalPath.startsWith(testClassesPath)) {
+                    // Ignore all *.class files not contained in testClassesDir ...
+                    continue;
+                }
+                String path = canonicalPath.substring(testClassesPath.length() + 1);
+                String className = path.substring(0, path.length() - ".class".length()).replace('/', '.');
                 Class<?> clazz = classLoader.loadClass(className);
-                if (jUnit4TestChecker.accept(clazz)) {
+                if (junit4TestChecker.accept(clazz)) {
                     testClasses.add(clazz);
                 }
+            } catch (Exception e) {
+                throw new InitializationError("Failed to load " + file + " -- " + e.getMessage());
             }
-            return testClasses.toArray(new Class[testClasses.size()]);
-        } catch (Exception e) {
-            throw new InitializationError("failed to scan " + baseDir + " using wildcard patterns " + Arrays.toString(wildcardPatterns) + " -- " + e);
         }
+        if (testClasses.isEmpty()) {
+            throw new InitializationError("Did not find any test classes using the specified wildcard patterns " + Arrays.toString(wildcardPatterns) + " relative to directory " + baseDir);
+        }
+        return testClasses.toArray(new Class[testClasses.size()]);
+    }
+
+    private static Set<File> findFiles(File baseDir, String... wildcardPatterns) throws InitializationError {
+        try {
+            Set<File> included = new HashSet<>();
+            Set<File> excluded = new HashSet<>();
+            for (String wildcardPattern: wildcardPatterns) {
+                if (wildcardPattern == null) {
+                    throw new InitializationError("wildcard pattern for the SuiteClasses annotation must not be null");
+                } else if (wildcardPattern.startsWith("!")) {
+                    excluded.addAll(findFiles(baseDir, wildcardPattern.substring(1)));
+                } else {
+                    if (!wildcardPattern.endsWith(".class")) {
+                        throw new InitializationError("wildcard pattern for the SuiteClasses annotation must end with \".class\"");
+                    }
+                    included.addAll(findFiles(baseDir, wildcardPattern));
+                }
+            }
+            included.removeAll(excluded);
+            return included;
+        } catch (IOException e) {
+            throw new InitializationError("Failed to scan " + baseDir + " using wildcard patterns " + Arrays.toString(wildcardPatterns) + " -- " + e);
+        }
+    }
+
+    private static Collection<File> findFiles(File baseDir, String wildcardPattern) throws InitializationError, IOException {
+        if (wildcardPattern.startsWith("/")) {
+            throw new InitializationError("wildcard pattern for the SuiteClasses annotation must not start with a '/' character");
+        }
+        while (wildcardPattern.startsWith("../")) {
+            baseDir = baseDir.getParentFile();
+            wildcardPattern = wildcardPattern.substring(3);
+        }
+        Pattern regex = convertWildcardPatternToRegex("/" + wildcardPattern);
+        String basePath = baseDir.getCanonicalPath().replace('\\', '/');
+        IOFileFilter fileFilter = new AbstractFileFilter() {
+            @Override
+            public boolean accept(File file) {
+                try {
+                    // Never accept directories, hidden files, and inner classes ...
+                    if (file.isDirectory() || file.isHidden() || file.getName().contains("$")) {
+                        return false;
+                    }
+                    String canonicalPath = file.getCanonicalPath().replace('\\', '/');
+                    if (canonicalPath.startsWith(basePath)) {
+                        String path = canonicalPath.substring(basePath.length());
+                        if (regex.matcher(path).matches()) {
+                            return true;
+                        }
+                    }
+                    return false;
+                } catch (IOException e) {
+                    throw new RuntimeException(e.getMessage());
+                }
+            }
+        };
+        return FileUtils.listFiles(baseDir, fileFilter, TrueFileFilter.INSTANCE);
     }
 
     private static File getBaseDir(Class<?> klass) throws InitializationError {
@@ -148,7 +167,16 @@ public class WildcardPatternSuite extends Suite {
         try {
             return new File(klassUrl.toURI()).getParentFile();
         } catch (URISyntaxException e) {
-            throw new InitializationError("failed to determine directory of " + klass.getSimpleName() + ".class file: " + e.getMessage());
+            throw new InitializationError("Failed to determine directory of " + klass.getSimpleName() + ".class file: " + e.getMessage());
+        }
+    }
+
+    private static File getClassesDir(Class<?> klass) throws InitializationError {
+        URL classesDirUrl = klass.getProtectionDomain().getCodeSource().getLocation();
+        try {
+            return new File(classesDirUrl.toURI());
+        } catch (URISyntaxException e) {
+            throw new InitializationError("Failed to determine classes directory of " + klass.getName() + " class: " + e.getMessage());
         }
     }
 
