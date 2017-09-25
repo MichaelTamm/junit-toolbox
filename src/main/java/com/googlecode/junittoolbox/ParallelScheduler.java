@@ -18,9 +18,9 @@ import static java.util.concurrent.ForkJoinTask.inForkJoinPool;
  */
 class ParallelScheduler implements RunnerScheduler {
 
-    private static final ForkJoinPool FORK_JOIN_POOL = setUpForkJoinPool();
+    static ForkJoinPool forkJoinPool = setUpForkJoinPool();
 
-    private static ForkJoinPool setUpForkJoinPool() {
+    static ForkJoinPool setUpForkJoinPool() {
         int numThreads;
         try {
             String configuredNumThreads = System.getProperty("maxParallelTestThreads");
@@ -29,16 +29,13 @@ class ParallelScheduler implements RunnerScheduler {
             Runtime runtime = Runtime.getRuntime();
             numThreads = Math.max(2, runtime.availableProcessors());
         }
-        ForkJoinPool.ForkJoinWorkerThreadFactory threadFactory = new ForkJoinPool.ForkJoinWorkerThreadFactory() {
-            @Override
-            public ForkJoinWorkerThread newThread(ForkJoinPool pool) {
-                if (pool.getPoolSize() > pool.getParallelism()) {
-                    return null;
-                } else {
-                    ForkJoinWorkerThread thread = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
-                    thread.setName("JUnit-" + thread.getName());
-                    return thread;
-                }
+        ForkJoinPool.ForkJoinWorkerThreadFactory threadFactory = pool -> {
+            if (pool.getPoolSize() >= pool.getParallelism()) {
+                return null;
+            } else {
+                ForkJoinWorkerThread thread = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+                thread.setName("JUnit-" + thread.getName());
+                return thread;
             }
         };
         return new ForkJoinPool(numThreads, threadFactory, null, false);
@@ -54,7 +51,7 @@ class ParallelScheduler implements RunnerScheduler {
             if (inForkJoinPool()) {
                 _asyncTasks.addFirst(ForkJoinTask.adapt(_lastScheduledChild).fork());
             } else {
-                _asyncTasks.addFirst(FORK_JOIN_POOL.submit(_lastScheduledChild));
+                _asyncTasks.addFirst(forkJoinPool.submit(_lastScheduledChild));
             }
         }
         // Note: We don't schedule the childStatement immediately here,
@@ -75,7 +72,7 @@ class ParallelScheduler implements RunnerScheduler {
             } else {
                 // Submit the last scheduled child to the ForkJoinPool too,
                 // because all tests should run in the worker threads ...
-                _asyncTasks.addFirst(FORK_JOIN_POOL.submit(_lastScheduledChild));
+                _asyncTasks.addFirst(forkJoinPool.submit(_lastScheduledChild));
             }
             // Make sure all asynchronously executed children are done, before we return ...
             for (ForkJoinTask<?> task : _asyncTasks) {
