@@ -2,7 +2,7 @@ package com.googlecode.junittoolbox;
 
 import jsr166y.ForkJoinTask;
 import jsr166y.RecursiveAction;
-import org.junit.experimental.thories.PotentialAssignment;
+import org.junit.experimental.theories.PotentialAssignment;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.experimental.theories.internal.Assignments;
