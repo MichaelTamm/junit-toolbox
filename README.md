@@ -18,14 +18,18 @@ If you use [Maven](http://maven.apache.org), add the following dependency to you
 <dependency>
     <groupId>com.googlecode.junit-toolbox</groupId>
     <artifactId>junit-toolbox</artifactId>
-    <version>2.3</version>
+    <version>2.4</version>
 </dependency>
 ```
 
 # Release Notes #
 
-## Version 2.3 (for Java 8) and Version 1.11 (for Java 6) ##
-  * Improved handling of `AssumptionViolatedException` in `ParallelRunner` contributed by Christian Grotheer (fixes [#12](https://github.com/MichaelTamm/junit-toolbox/issues/12)).
+## Version 2.4 (for Java 8) ##
+ * [WildcardPatternSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/WildcardPatternSuite.html) can now handle wildcard patterns starting with "../" (fixes [#16](https://github.com/MichaelTamm/junit-toolbox/issues/16))
+ * Fixed edge case where too many threads were created when using one of [ParallelRunner](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelRunner.html),  [ParallelParameterized](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelParameterized.html), or  [ParallelSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelSuite.html) contributed by Till Klister 
+
+## Version 2.3 (for Java 8) ##
+  * Improved handling of `AssumptionViolatedException` in [ParallelRunner](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelRunner.html) contributed by Christian Grotheer (fixes [#12](https://github.com/MichaelTamm/junit-toolbox/issues/12)).
 
 ## Version 2.2 (for Java 8) and Version 1.10 (for Java 6) ##
   * Updated to JUnit 4.12
