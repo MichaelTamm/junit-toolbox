@@ -24,7 +24,7 @@ If you use [Maven](http://maven.apache.org), add the following dependency to you
 
 # Release Notes #
 
-## Version 2.4 (for Java 8) ##
+## Version 2.4 (for Java 8) and Version 1.11 (for Java 6) ##
  * [WildcardPatternSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/WildcardPatternSuite.html) can now handle wildcard patterns starting with "../" (fixes [#16](https://github.com/MichaelTamm/junit-toolbox/issues/16))
  * Fixed edge case where too many threads were created when using one of [ParallelRunner](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelRunner.html),  [ParallelParameterized](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelParameterized.html), or  [ParallelSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelSuite.html) contributed by Till Klister 
 
