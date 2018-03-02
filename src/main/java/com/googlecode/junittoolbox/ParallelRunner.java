@@ -12,6 +12,7 @@ import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.experimental.theories.internal.Assignments;
 import org.junit.internal.AssumptionViolatedException;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -42,14 +43,28 @@ import org.junit.runners.model.TestClass;
  */
 public class ParallelRunner extends Theories {
 
+    private final Class<?> testClass;
+
     public ParallelRunner(Class<?> klass) throws InitializationError {
         super(klass);
+        this.testClass = klass;
         setScheduler(new ParallelScheduler());
     }
 
     @Override
     public Statement methodBlock(FrameworkMethod method) {
         return new ParallelTheoryAnchor(method, getTestClass());
+    }
+
+    @Override
+    protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
+        if(parseSuiteConfiguration().equals("methods")) {
+            super.runChild(method, notifier);
+        } else {
+            synchronized (this) {
+                super.runChild(method, notifier);
+            }
+        }
     }
 
     public class ParallelTheoryAnchor extends TheoryAnchor {
@@ -133,5 +148,10 @@ public class ParallelRunner extends Theories {
         protected synchronized void handleDataPointSuccess() {
             super.handleDataPointSuccess();
         }
+    }
+
+    private String parseSuiteConfiguration() {
+        SuiteConfiguration suiteConfiguration = testClass.getAnnotation(SuiteConfiguration.class);
+        return suiteConfiguration != null ? suiteConfiguration.parallel() : "methods";
     }
 }
