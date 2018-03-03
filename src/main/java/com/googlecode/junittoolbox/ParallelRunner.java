@@ -7,6 +7,7 @@ import java.util.Deque;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.experimental.theories.PotentialAssignment;
 import org.junit.experimental.theories.Theories;
@@ -44,11 +45,10 @@ import org.junit.runners.model.TestClass;
  */
 public class ParallelRunner extends Theories {
 
-    private final Class<?> testClass;
+    private final ReentrantLock lock = new ReentrantLock();
 
     public ParallelRunner(Class<?> klass) throws InitializationError {
         super(klass);
-        this.testClass = klass;
         setScheduler(new ParallelScheduler());
     }
 
@@ -60,9 +60,9 @@ public class ParallelRunner extends Theories {
     @Override
     protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
         if(getPropertyContainer().isParallelTypeClasses()) {
-            synchronized (this) {
-                super.runChild(method, notifier);
-            }
+            lock.lock();
+            super.runChild(method, notifier);
+            lock.unlock();
         } else {
             super.runChild(method, notifier);
         }

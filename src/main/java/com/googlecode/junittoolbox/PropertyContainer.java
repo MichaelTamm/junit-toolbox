@@ -1,11 +1,15 @@
 package com.googlecode.junittoolbox;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class PropertyContainer {
 
     private static PropertyContainer propertyContainer;
-    private String parallelType = "methods";
+    private final AtomicReference<String> parallelType = new AtomicReference<>();
 
-    private PropertyContainer() { }
+    private PropertyContainer() {
+        this.parallelType.set("methods");
+    }
 
     public static PropertyContainer getPropertyContainer() {
         if (propertyContainer == null) {
@@ -15,10 +19,10 @@ public class PropertyContainer {
     }
 
     public void setParallelType(String parallelType) {
-        this.parallelType = parallelType;
+        this.parallelType.set(parallelType);
     }
 
     public boolean isParallelTypeClasses() {
-        return parallelType.equals("classes");
+        return this.parallelType.get().equals("classes");
     }
 }
