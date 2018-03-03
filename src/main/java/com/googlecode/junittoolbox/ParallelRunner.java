@@ -45,10 +45,11 @@ import org.junit.runners.model.TestClass;
  */
 public class ParallelRunner extends Theories {
 
-    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock;
 
     public ParallelRunner(Class<?> klass) throws InitializationError {
         super(klass);
+        this.lock = new ReentrantLock();
         setScheduler(new ParallelScheduler());
     }
 

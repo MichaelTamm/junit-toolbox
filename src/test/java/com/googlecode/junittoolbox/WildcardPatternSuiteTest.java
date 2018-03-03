@@ -21,7 +21,7 @@ public class WildcardPatternSuiteTest {
     public void test_AllTests_sample() throws Exception {
         Runner runner = ClassRequest.aClass(AllTests.class).getRunner();
         Collection<?> children = getChildren(runner);
-        assertThat(children.size(), is(5));
+        assertThat(children.size(), is(3));
         assertThat(children, hasItemWithTestClass(LoginBeanTest.class));
         assertThat(children, hasItemWithTestClass(LoginFrontendTest.class));
         assertThat(children, hasItemWithTestClass(FillOutFormFrontendTest.class));
