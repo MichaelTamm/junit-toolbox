@@ -63,7 +63,7 @@ public class ParallelSuiteByClassesTest {
         final Result result = JUnitCore.runClasses(ByMethod.class);
         assertTrue(result.wasSuccessful());
         assertEquals(6, result.getRunCount());
-        assertTrue((result.getRunTime() / 1000) <= 3);
+        assertTrue((result.getRunTime() / 1000) < 3);
     }
 
     @Test
