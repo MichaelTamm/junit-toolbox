@@ -1,13 +1,7 @@
 package com.googlecode.junittoolbox;
 
-import org.junit.runner.Description;
-import org.junit.runner.Runner;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
-
-import static com.googlecode.junittoolbox.PropertyContainer.getPropertyContainer;
 
 /**
  * An extension of the {@link WildcardPatternSuite} runner, which executes
