@@ -1,5 +1,6 @@
 package com.googlecode.junittoolbox;
 
+import static com.googlecode.junittoolbox.PropertyContainer.getPropertyContainer;
 import static com.googlecode.junittoolbox.util.TigerThrower.sneakyThrow;
 
 import java.util.Deque;
@@ -58,12 +59,12 @@ public class ParallelRunner extends Theories {
 
     @Override
     protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
-        if(parseSuiteConfiguration().equals("methods")) {
-            super.runChild(method, notifier);
-        } else {
+        if(getPropertyContainer().isParallelTypeClasses()) {
             synchronized (this) {
                 super.runChild(method, notifier);
             }
+        } else {
+            super.runChild(method, notifier);
         }
     }
 
@@ -148,10 +149,5 @@ public class ParallelRunner extends Theories {
         protected synchronized void handleDataPointSuccess() {
             super.handleDataPointSuccess();
         }
-    }
-
-    private String parseSuiteConfiguration() {
-        SuiteConfiguration suiteConfiguration = testClass.getAnnotation(SuiteConfiguration.class);
-        return suiteConfiguration != null ? suiteConfiguration.parallel() : "methods";
     }
 }

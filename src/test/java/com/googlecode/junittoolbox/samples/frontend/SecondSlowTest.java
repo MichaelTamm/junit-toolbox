@@ -9,17 +9,20 @@ public class SecondSlowTest {
 
 	@Test
 	public void slowOneTest() throws InterruptedException {
-		sleep(2000);
+		sleep(5000);
+		System.out.println("One");
 	}
 
 	@Test
 	public void slowTwoTest() throws InterruptedException {
-		sleep(2000);
+		sleep(5000);
+		System.out.println("Two");
 	}
 
 	@Test
 	public void slowThreeTest() throws InterruptedException {
-		sleep(2000);
+		sleep(5000);
+		System.out.println("Three");
 	}
 
 	private void sleep(int timeout) throws InterruptedException {

@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import static com.googlecode.junittoolbox.PropertyContainer.getPropertyContainer;
 import static org.junit.experimental.categories.Categories.*;
 
 /**
@@ -221,6 +222,7 @@ public class WildcardPatternSuite extends Suite {
     public WildcardPatternSuite(Class<?> klass, RunnerBuilder builder) throws InitializationError {
         super(builder, klass, getSuiteClasses(klass));
         Filter filter = CategoriesFilter.forTestSuite(klass);
+        getPropertyContainer().setParallelType(parseSuiteConfiguration(klass));
         if (filter != null) {
             try {
                 filter(filter);
@@ -228,5 +230,10 @@ public class WildcardPatternSuite extends Suite {
                 throw new InitializationError(e);
             }
         }
+    }
+
+    private String parseSuiteConfiguration(Class<?> klass) {
+        SuiteConfiguration suiteConfiguration = klass.getAnnotation(SuiteConfiguration.class);
+        return suiteConfiguration != null ? suiteConfiguration.parallel() : "methods";
     }
 }
