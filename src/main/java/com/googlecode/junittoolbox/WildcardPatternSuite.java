@@ -1,5 +1,26 @@
 package com.googlecode.junittoolbox;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import com.googlecode.junittoolbox.util.JUnit4TestChecker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
@@ -12,14 +33,8 @@ import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.*;
-import java.util.regex.Pattern;
-
-import static org.junit.experimental.categories.Categories.*;
+import static org.junit.experimental.categories.Categories.ExcludeCategory;
+import static org.junit.experimental.categories.Categories.IncludeCategory;
 
 /**
  * A replacement for the JUnit runners {@link Suite} and {@link Categories},
@@ -62,13 +77,13 @@ public class WildcardPatternSuite extends Suite {
             throw new InitializationError("class " + klass.getName() + " must have a SuiteClasses annotation");
         }
         Class<?>[] suiteClasses1 = (annotation1 == null ? null : annotation1.value());
-        Class<?>[] suiteClasses2 = (annotation2 == null ? null : findSuiteClasses(klass, annotation2.value()));
+        Class<?>[] suiteClasses2 = (annotation2 == null ? null : findSuiteClasses(klass, annotation2.treeTraversalStrategy(), annotation2.value()));
         return union(suiteClasses1, suiteClasses2);
     }
 
-    private static Class<?>[] findSuiteClasses(Class<?> klass, String... wildcardPatterns) throws InitializationError {
+    private static Class<?>[] findSuiteClasses(Class<?> klass, TreeTraversalStrategy treeTraversalStrategy, String... wildcardPatterns) throws InitializationError {
         File baseDir = getBaseDir(klass);
-        Set<File> classFiles = findFiles(baseDir, wildcardPatterns);
+        Set<File> classFiles = findFiles(baseDir, treeTraversalStrategy, wildcardPatterns);
         if (classFiles.isEmpty()) {
             throw new InitializationError("Did not find any *.class file using the specified wildcard patterns " + Arrays.toString(wildcardPatterns) + " relative to directory " + baseDir);
         }
@@ -105,20 +120,20 @@ public class WildcardPatternSuite extends Suite {
         return testClasses.toArray(new Class[testClasses.size()]);
     }
 
-    private static Set<File> findFiles(File baseDir, String... wildcardPatterns) throws InitializationError {
+    private static Set<File> findFiles(File baseDir, TreeTraversalStrategy treeTraversalStrategy, String... wildcardPatterns) throws InitializationError {
         try {
-            Set<File> included = new HashSet<>();
-            Set<File> excluded = new HashSet<>();
+            Set<File> included = new LinkedHashSet<>();
+            Set<File> excluded = new LinkedHashSet<>();
             for (String wildcardPattern: wildcardPatterns) {
                 if (wildcardPattern == null) {
                     throw new InitializationError("wildcard pattern for the SuiteClasses annotation must not be null");
                 } else if (wildcardPattern.startsWith("!")) {
-                    excluded.addAll(findFiles(baseDir, wildcardPattern.substring(1)));
+                    excluded.addAll(findFiles(baseDir, treeTraversalStrategy, wildcardPattern.substring(1)));
                 } else {
                     if (!wildcardPattern.endsWith(".class")) {
                         throw new InitializationError("wildcard pattern for the SuiteClasses annotation must end with \".class\"");
                     }
-                    included.addAll(findFiles(baseDir, wildcardPattern));
+                    included.addAll(findFiles(baseDir, treeTraversalStrategy, wildcardPattern));
                 }
             }
             included.removeAll(excluded);
@@ -128,7 +143,7 @@ public class WildcardPatternSuite extends Suite {
         }
     }
 
-    private static Collection<File> findFiles(File baseDir, String wildcardPattern) throws InitializationError, IOException {
+    private static Collection<File> findFiles(File baseDir, TreeTraversalStrategy treeTraversalStrategy, String wildcardPattern) throws InitializationError, IOException {
         if (wildcardPattern.startsWith("/")) {
             throw new InitializationError("wildcard pattern for the SuiteClasses annotation must not start with a '/' character");
         }
@@ -159,7 +174,12 @@ public class WildcardPatternSuite extends Suite {
                 }
             }
         };
-        return FileUtils.listFiles(baseDir, fileFilter, TrueFileFilter.INSTANCE);
+        Collection<File> matching = FileUtils.listFiles(baseDir, fileFilter, TrueFileFilter.INSTANCE);
+        if (treeTraversalStrategy == TreeTraversalStrategy.BREADTH_FIRST) {
+            Map<String,List<File>> map = matching.stream().collect(Collectors.groupingBy(File::getParent));
+            return map.values().stream().flatMap(List::stream).collect(Collectors.toList());
+        }
+        return matching;
     }
 
     private static File getBaseDir(Class<?> klass) throws InitializationError {
@@ -209,7 +229,7 @@ public class WildcardPatternSuite extends Suite {
         } else if (suiteClasses2 == null) {
             return suiteClasses1;
         } else {
-            HashSet<Class<?>> temp = new HashSet<>();
+            HashSet<Class<?>> temp = new LinkedHashSet<>();
             temp.addAll(Arrays.asList(suiteClasses1));
             temp.addAll(Arrays.asList(suiteClasses2));
             Class<?>[] result = new Class<?>[temp.size()];

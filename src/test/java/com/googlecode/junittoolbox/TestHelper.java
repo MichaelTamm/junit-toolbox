@@ -24,7 +24,7 @@ public class TestHelper {
         return hasItem(withTestClass(testClass));
     }
 
-    private static Matcher withTestClass(final Class<?> testClass) {
+    static Matcher withTestClass(final Class<?> testClass) {
         return new CustomMatcher("with test class " + testClass.getName()) {
             @Override
             public boolean matches(Object item) {

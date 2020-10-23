@@ -1,7 +1,15 @@
 package com.googlecode.junittoolbox;
 
-import com.googlecode.junittoolbox.samples.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import com.googlecode.junittoolbox.samples.AllSlowTests;
 import com.googlecode.junittoolbox.samples.AllTests;
+import com.googlecode.junittoolbox.samples.AllTestsBreadthFirst;
+import com.googlecode.junittoolbox.samples.AllTestsInThisPackage;
+import com.googlecode.junittoolbox.samples.LoginBeanTest;
+import com.googlecode.junittoolbox.samples.NormalLoginTests;
 import com.googlecode.junittoolbox.samples.frontend.FillOutFormFrontendTest;
 import com.googlecode.junittoolbox.samples.frontend.LoginFrontendTest;
 import com.googlecode.junittoolbox.samples.suites.AllFrontendTests;
@@ -9,13 +17,38 @@ import org.junit.Test;
 import org.junit.internal.requests.ClassRequest;
 import org.junit.runner.Runner;
 
-import java.util.Collection;
-
-import static com.googlecode.junittoolbox.TestHelper.*;
+import static com.googlecode.junittoolbox.TestHelper.getChildren;
+import static com.googlecode.junittoolbox.TestHelper.hasItemWithTestClass;
+import static com.googlecode.junittoolbox.TestHelper.hasItemWithTestMethod;
+import static com.googlecode.junittoolbox.TestHelper.withTestClass;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 public class WildcardPatternSuiteTest {
+
+    @Test
+    public void test_AllTests_sample_depth_first() throws Exception {
+        Runner runner = ClassRequest.aClass(AllTests.class).getRunner();
+        Collection<?> children = getChildren(runner);
+        List<?> list = new ArrayList<>(children);
+
+        assertThat(list.size(), is(3));
+        assertThat(list.get(0), withTestClass(FillOutFormFrontendTest.class));
+        assertThat(list.get(1), withTestClass(LoginFrontendTest.class));
+        assertThat(list.get(2), withTestClass(LoginBeanTest.class));
+    }
+
+    @Test
+    public void test_AllTests_sample_breadth_first() throws Exception {
+        Runner runner = ClassRequest.aClass(AllTestsBreadthFirst.class).getRunner();
+        Collection<?> children = getChildren(runner);
+        List<?> list = new ArrayList<>(children);
+
+        assertThat(list.size(), is(3));
+        assertThat(list.get(0), withTestClass(LoginBeanTest.class));
+        assertThat(list.get(1), withTestClass(FillOutFormFrontendTest.class));
+        assertThat(list.get(2), withTestClass(LoginFrontendTest.class));
+    }
 
     @Test
     public void test_AllTests_sample() throws Exception {
