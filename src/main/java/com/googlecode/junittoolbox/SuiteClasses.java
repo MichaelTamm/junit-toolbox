@@ -22,4 +22,14 @@ public @interface SuiteClasses {
      * with a <code>'!'</code> character, which means matching class files are excluded).
      */
     public String[] value();
+
+    /**
+     * Set tree traversal strategy
+     * <ul>
+     * <li>BREADTH_FIRST: search for classes with breadth-first strategy</li>
+     * <li>DEPTH_FIRST: search for classes with depth-first strategy</li>>
+     * </ul>
+     * @return
+     */
+    public TreeTraversalStrategy treeTraversalStrategy() default TreeTraversalStrategy.DEPTH_FIRST;
 }
