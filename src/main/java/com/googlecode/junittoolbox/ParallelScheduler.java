@@ -77,9 +77,8 @@ class ParallelScheduler implements RunnerScheduler {
             // Make sure all asynchronously executed children are done, before we return ...
             for (ForkJoinTask<?> task : _asyncTasks) {
                 // Note: Because we have added all tasks via addFirst into _asyncTasks,
-                // task.join() is able to steal tasks from other worker threads,
-                // if there are tasks, which have not been started yet ...
-                // from other worker threads ...
+                // task.join() is able to steal tasks from other worker threads, if there
+                // are tasks, which have not been started yet.
                 try { task.join(); } catch (Throwable t) { me.add(t); }
             }
             me.throwIfNotEmpty();

@@ -1,17 +1,27 @@
 package com.googlecode.junittoolbox;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.Assert.*;
 
 public class ParallelSuiteTest {
 
+    private static volatile CountDownLatch latch;
     private static volatile Thread thread1 = null;
     private static volatile Thread thread2 = null;
+
+    @Before
+    public void setUp() {
+        latch = new CountDownLatch(2);
+    }
 
     @RunWith(ParallelSuite.class)
     @SuiteClasses({})
@@ -26,14 +36,18 @@ public class ParallelSuiteTest {
 
     public static class Test1 {
         @Test
-        public void test() {
+        public void test() throws InterruptedException {
+            latch.countDown();
+            assertTrue(latch.await(3, TimeUnit.SECONDS));
             thread1 = Thread.currentThread();
         }
     }
 
     public static class Test2 {
         @Test
-        public void test() {
+        public void test() throws InterruptedException {
+            latch.countDown();
+            assertTrue(latch.await(3, TimeUnit.SECONDS));
             thread2 = Thread.currentThread();
         }
     }
