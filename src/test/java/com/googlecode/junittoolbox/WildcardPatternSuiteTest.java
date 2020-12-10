@@ -10,6 +10,7 @@ import org.junit.internal.requests.ClassRequest;
 import org.junit.runner.Runner;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import static com.googlecode.junittoolbox.TestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -22,9 +23,10 @@ public class WildcardPatternSuiteTest {
         Runner runner = ClassRequest.aClass(AllTests.class).getRunner();
         Collection<?> children = getChildren(runner);
         assertThat(children.size(), is(3));
-        assertThat(children, hasItemWithTestClass(LoginBeanTest.class));
-        assertThat(children, hasItemWithTestClass(LoginFrontendTest.class));
-        assertThat(children, hasItemWithTestClass(FillOutFormFrontendTest.class));
+        Iterator<?> i = getChildren(runner).iterator();
+        assertThat(i.next(), hasTestClass(LoginBeanTest.class));
+        assertThat(i.next(), hasTestClass(FillOutFormFrontendTest.class));
+        assertThat(i.next(), hasTestClass(LoginFrontendTest.class));
     }
 
     @Test
@@ -40,8 +42,9 @@ public class WildcardPatternSuiteTest {
         Runner runner = ClassRequest.aClass(AllFrontendTests.class).getRunner();
         Collection<?> children = getChildren(runner);
         assertThat(children.size(), is(2));
-        assertThat(children, hasItemWithTestClass(LoginFrontendTest.class));
-        assertThat(children, hasItemWithTestClass(FillOutFormFrontendTest.class));
+        Iterator<?> i = getChildren(runner).iterator();
+        assertThat(i.next(), hasTestClass(FillOutFormFrontendTest.class));
+        assertThat(i.next(), hasTestClass(LoginFrontendTest.class));
     }
 
     @Test

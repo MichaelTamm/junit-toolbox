@@ -24,6 +24,16 @@ public class TestHelper {
         return hasItem(withTestClass(testClass));
     }
 
+    static Matcher hasTestClass(final Class<?> testClass) {
+        return new CustomMatcher("has test class " + testClass.getName()) {
+            @Override
+            public boolean matches(Object item) {
+                return item instanceof Runner
+                        && testClass.equals(((Runner) item).getDescription().getTestClass());
+            }
+        };
+    }
+
     private static Matcher withTestClass(final Class<?> testClass) {
         return new CustomMatcher("with test class " + testClass.getName()) {
             @Override

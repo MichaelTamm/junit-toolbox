@@ -68,7 +68,7 @@ public class WildcardPatternSuite extends Suite {
 
     private static Class<?>[] findSuiteClasses(Class<?> klass, String... wildcardPatterns) throws InitializationError {
         File baseDir = getBaseDir(klass);
-        Set<File> classFiles = findFiles(baseDir, wildcardPatterns);
+        SortedSet<File> classFiles = findFiles(baseDir, wildcardPatterns);
         if (classFiles.isEmpty()) {
             throw new InitializationError("Did not find any *.class file using the specified wildcard patterns " + Arrays.toString(wildcardPatterns) + " relative to directory " + baseDir);
         }
@@ -105,9 +105,9 @@ public class WildcardPatternSuite extends Suite {
         return testClasses.toArray(new Class[testClasses.size()]);
     }
 
-    private static Set<File> findFiles(File baseDir, String... wildcardPatterns) throws InitializationError {
+    private static SortedSet<File> findFiles(File baseDir, String... wildcardPatterns) throws InitializationError {
         try {
-            Set<File> included = new HashSet<>();
+            SortedSet<File> included = new TreeSet<>();
             Set<File> excluded = new HashSet<>();
             for (String wildcardPattern: wildcardPatterns) {
                 if (wildcardPattern == null) {
@@ -209,7 +209,7 @@ public class WildcardPatternSuite extends Suite {
         } else if (suiteClasses2 == null) {
             return suiteClasses1;
         } else {
-            HashSet<Class<?>> temp = new HashSet<>();
+            Set<Class<?>> temp = new LinkedHashSet<>();
             temp.addAll(Arrays.asList(suiteClasses1));
             temp.addAll(Arrays.asList(suiteClasses2));
             Class<?>[] result = new Class<?>[temp.size()];
