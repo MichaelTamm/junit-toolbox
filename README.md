@@ -8,8 +8,9 @@ The JUnit Toolbox provides some useful classes for writing automated tests with 
   * [WildcardPatternSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/WildcardPatternSuite.html) -- A replacement for the JUnit runners `Suite` and `Categories`, which allows you to specify the children classes of your test suite class using a wildcard pattern. Furthermore you can include and/or exclude multiple categories.
   * [ParallelSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelSuite.html) -- An extension of the `WildcardPatternSuite`, which executes its children classes concurrently using several worker threads. Although it extends `WildcardPatternSuite` you are not forced to use a wildcard pattern, you can also list the children class using the `@SuiteClasses` annotation known from JUnit.
   * [InnerTestClassesSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/InnerTestClassesSuite.html) -- A replacement for the JUnit runner `Enclosed` which executes all inner test classes of the class annotated with ` @RunWith(InnerTestClassesSuite.class)`. In contrast to the `Enclosed` runner provided by JUnit it detects if an inner class is actually a test class and ignores all other inner classes.
+  * [ParallelInnerTestClassesSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/ParallelInnerTestClassesSuite.html) -- A replacement for `InnerTestClassesSuite` which executes its children classes concurrently using several worker threads.
 
-`ParallelRunner`, `ParallelParameterized`, and `ParallelSuite` share a common Fork-Join-Pool. You can control the maximum number of worker threads by specifying the system property `maxParallelTestThreads`. If this system property is not set, there will be as many worker threads as the number of processors available to the JVM.
+`ParallelRunner`, `ParallelParameterized`, `ParallelSuite` and `ParallelInnerTestClassesSuite` share a common Fork-Join-Pool. You can control the maximum number of worker threads by specifying the system property `maxParallelTestThreads`. If this system property is not set, there will be as many worker threads as the number of processors available to the JVM.
 
 # How to use it #
 
@@ -18,11 +19,35 @@ If you use [Maven](http://maven.apache.org), add the following dependency to you
 <dependency>
     <groupId>com.googlecode.junit-toolbox</groupId>
     <artifactId>junit-toolbox</artifactId>
-    <version>2.4</version>
+    <version>2.5</version>
 </dependency>
 ```
 
 # Release Notes #
+
+## Version 2.5 (for Java 8) and Version 1.12 (for Java 6) ##
+
+ * New runner `ParallelInnerTestClassesSuite` which runs all inner test classes of the class annotated with `@RunWith(ParallelInnerTestClassesSuite.class)`. In contrast to the `Enclosed` runner provided by JUnit, it detects if an inner class is actually a test class and ignores all other inner classes. In contrast to `InnerTestClassesSuite` it executes its children classes concurrently using several worker threads. run Example:
+```
+@RunWith(ParallelInnerTestClassesSuite.class)
+public class LoginBeanTests {
+
+    public static class UnitTests {
+        @Test
+        public void test1() { ... }
+    }
+
+    @Configuration
+    public static class IntegrationTestsConfig { ... }
+
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = IntegrationTestsConfig.class)
+    public static class IntegrationTests {
+        @Test
+        public void test2() { ... }
+    }
+}
+```
 
 ## Version 2.4 (for Java 8) and Version 1.11 (for Java 6) ##
  * [WildcardPatternSuite](//michaeltamm.github.io/junit-toolbox/com/googlecode/junittoolbox/WildcardPatternSuite.html) can now handle wildcard patterns starting with "../" (fixes [#16](https://github.com/MichaelTamm/junit-toolbox/issues/16))
